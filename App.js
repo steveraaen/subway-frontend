@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import {
   AppRegistry,
+  AppState,
   Dimensions,
   Platform,
   StyleSheet,
@@ -21,28 +22,31 @@ import GeoWatch from'./GeoWatch.js';
 
 class App extends Component<{}> {
     static navigationOptions = {
-   headerTitle: '5 Nearest Stops',
+   headerTitle: 'Nearest Subway Stops',
   headerStyle: { backgroundColor: 'white' },
-  headerTitleStyle: { color: 'gray', fontSize: 26 },
+  headerTitleStyle: { color: 'gray', fontSize: 22 },
   };
   constructor(props) {
     super(props);
     this.state = {
+      appState: AppState.currentState,
       lnglat: null,
       lineColors: lineColors,
       stops: null
     }
     this.getStops = this.getStops.bind(this)
-    this.getAll = this.getAll.bind(this)
+    this.getAll = this.getAll.bind(this) 
+    this.getAll()
   }
  
 
   getStops(lnglat) {
-    /*var stopsURL= 'https://subs-backend.herokuapp.com/api/stops'*/  
-     return axios.get('http://127.0.0.1:5000/api/stops/', {
+   /* var stopsURL= 'http://127.0.0.1:5000/api/stops/'  */
+     return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
             params: {
                 lng: this.state.longitude,
-                lat: this.state.latitude 
+                lat: this.state.latitude,
+                
             }
         })    
       .then((response) => {
@@ -61,43 +65,47 @@ console.log(response)
             }
           }
         }
-        this.setState({ data: response.data.slice(0, 5),
+        this.setState({ data: response.data,
                         loading: false 
                       });
       })
       .catch(err => console.log(err));
 } 
+    componentWillMount() {
+
+    }
+
+
     getAll() {
         navigator.geolocation.getCurrentPosition(function(pos) {
-            var { longitude, latitude, accuracy } = pos.coords
+            var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
                 longitude: pos.coords.longitude,
                 latitude: pos.coords.latitude,
                 lnglat: [pos.coords.longitude, pos.coords.latitude],
-                accuracy: pos.coords.accuracy
+                accuracy: pos.coords.accuracy,
+                heading: pos.coords.heading
             })
             this.getStops()
 
         }.bind(this))
     }
   componentDidMount() {
-    this.getAll()
+     this.getAll()
   }
+
   render() {
       
-    
-    
-
     var width = Dimensions.get('window').width;
     var height = Dimensions.get('window').height;
     const { navigate } = this.props.navigation;
    if(this.state.data) {
     return (
-<ScrollView>
+<ScrollView style={{height: height}} >
   <View style={styles.container}>
     <View >
         <Text style={styles.instructions}>
-          Touch a Stop To View The Schedule
+          Touch a stop to view the schedule
         </Text>
     </View>
     <View style={{flex: 1, justifyContent: 'flex-start'}}>
@@ -124,16 +132,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     backgroundColor: '#5B5B5B',
-    marginTop: 10,
+    marginTop: 6,
+    marginBottom: 2,
+    paddingBottom: 2
   },
   instructions: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontStyle: 'italic',
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 5,
-    marginTop: 10,
+    marginTop: 5,
   },
 });
 
