@@ -23,16 +23,19 @@ constructor(props) {
 		loading: false,
 		timeStamp: Math.round((new Date()).getTime() / 1000)		
 	}
-	this.freshStops = this.freshStops.bind(this)
+	this.freshSched = this.freshSched.bind(this)
 }
- freshStops() {
- 		var curColor;	
+ freshSched() {
+
 	var schedObj = this.props.sched;
 	console.log(this.props)
 	for(let trn in schedObj) {
 
-		var north = schedObj[trn].N.slice(0, 4)
-		var south = schedObj[trn].S.slice(0, 4)
+	var north = schedObj[trn].N
+	var south = schedObj[trn].S.slice(0, 4)
+
+	function clean(arr) {
+	return arr.timeDif > 0
 	}
 	for(let n in north) {
 		var nId = north[n].routeId		
@@ -43,7 +46,9 @@ constructor(props) {
 		}
 		north[n].timeStamp = Math.round((new Date()).getTime() / 1000)
 		north[n].timeDif = north[n].departureTime - north[n].timeStamp
-	}
+		} 
+		var cleanNorth = north.filter(clean).slice(0, 4)
+	
 
 	/*this.setState({north: north})	*/
 	for(let s in south) {
@@ -56,27 +61,29 @@ constructor(props) {
 	south[s].timeStamp = Math.round((new Date()).getTime() / 1000)
 	south[s].timeDif = south[s].departureTime - south[s].timeStamp
 	}
+	var cleanSouth = south.filter(clean).slice(0, 4)
+	}
 	this.setState({ 
-				north: north,
-				south: south
+				north: cleanNorth,
+				south: cleanSouth
 				})
  }
 
 componentWillReceiveProps(){
-	this.freshStops()
+	this.freshSched()
 
 	}
  componentDidMount() {
 
  	this.props.getSubways()
  	this.setInterval(() => {
- 		this.freshStops()
+ 		this.freshSched()
 	this.setState({ 
 			timeStamp: Math.round((new Date()).getTime() / 1000),
 				north: this.state.north,
 				south: this.state.south
 				}) 		
-}, 10000)
+}, 15000)
  	
  }
 render() {

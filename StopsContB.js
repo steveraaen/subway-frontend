@@ -32,15 +32,13 @@ export default class StopsContB extends Component {
 	
 
 	getSubways(id, line) {    
-    var northTrains = [];
-    var southTrains = [];
+
     return axios.get('https://subs-backend.herokuapp.com/api/train', { 
     	params: {
 	    	id: this.state.id,
 	    	feed: this.state.feed
 	    	}
-    })
-      .then((responseData) => {
+    }).then((responseData) => {
       	
 		this.setState({
 			loading: false,
@@ -48,34 +46,37 @@ export default class StopsContB extends Component {
 		})     
       })
 	}
-	handlePress(id, feed, item) {
-		console.log(item)
+
+
+	handlePress(id, feed) {
+
 		this.setState({
 			id: id,
 			feed: feed
-		}, function(id, feed) {
+		},((i, f) => {
 			this.getSubways(this.state.id, this.state.feed)
-		})
-		
-		/*this.props.navigation.navigate('Schedule')*/
-	}
+		}))
 
+}
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchId);
+  }
 	render() {
     var width = Dimensions.get('window').width;
     var height = Dimensions.get('window').height; 
 		
 		return  (
 			
-			<View style={{marginRight: width * .05, marginLeft: width * .05, }}>
-			<ScrollView style={{height: height * .4}}>
+			<View style={{marginRight: 20, marginLeft: 20, }}>
+			<ScrollView style={{height: 190}}>
 			<FlatList	
 			  style={{marginTop: 10}}
 			  data={this.props.stops} 
 			  renderItem={({item}) => 
 				  <TouchableOpacity 
 					  onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed)}  		 
-					  style={{width: width, height: height * .07, alignSelf: 'stretch', marginTop: 4,  paddingBottom: 5, backgroundColor: item.properties.color }}>
-						  <View style={{justifyContent: 'center'}} >
+					  style={{ height: 40, alignSelf: 'stretch', marginTop: 4,  paddingBottom: 5, backgroundColor: item.properties.color}}>
+						  <View style={{justifyContent: 'center', borderWidth: 0}} >
 						  	<Text style={{fontSize: 14, paddingLeft: 5,fontWeight: 'bold', textAlign: "center"}} >{item.properties.stop_name}</Text>
 						  </View>
 						  <View style={{justifyContent: 'center'}} >
