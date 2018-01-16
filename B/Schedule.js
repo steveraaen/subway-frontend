@@ -5,34 +5,34 @@ import {
   View,
   Dimensions, 
   Button,
-  FlatList
+  FlatList,
+  TouchableOpacity
 } from 'react-native';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import Swiper from 'react-native-swiper';
 import moment from'moment';
-import lineColors from'./helpers.js';
-
+import lineColors from'../helpers.js';
 
 export default class Schedule extends Component {
-
 constructor(props) {
-	props.getSubways()	
 	super(props);
+	this.props.getSubways()	
 	this.state = {
 		loading: false,
-		timeStamp: Math.round((new Date()).getTime() / 1000)		
+		timeStamp: Math.round((new Date()).getTime() / 1000)
+			
 	}
 	this.freshSched = this.freshSched.bind(this)
+	mixins: [TimerMixin]
+   
 }
  freshSched() {
-
 	var schedObj = this.props.sched;
 	console.log(this.props)
 	for(let trn in schedObj) {
-
 	var north = schedObj[trn].N
-	var south = schedObj[trn].S.slice(0, 4)
+	var south = schedObj[trn].S
 
 	function clean(arr) {
 	return arr.timeDif > 0
@@ -75,17 +75,18 @@ componentWillReceiveProps(){
 	}
  componentDidMount() {
 
- 	this.props.getSubways()
- 	this.setInterval(() => {
+ 	this.props.getSubways().catch((error)=>{
+     console.log("Api call error");
+     alert(error.message);
+  });
+ 	var intA = this.setInterval(() => {
  		this.freshSched()
-	this.setState({ 
-			timeStamp: Math.round((new Date()).getTime() / 1000),
-				north: this.state.north,
-				south: this.state.south
-				}) 		
-}, 15000)
- 	
+		
+}, 30000) 	
  }
+  	componentWillUnmount() {
+	clearInterval(this.intA);
+ 	}
 render() {
     const width = Dimensions.get('window').width;
     const height = Dimensions.get('window').height; 
@@ -110,6 +111,11 @@ render() {
   	backgroundColor: 'black', 
   	paddingTop: 2,
   	marginTop: 2
+  },
+  debug: {
+  	height: 15,
+  	backgroundColor: 'black',
+  	marginTop: 20
   }
 
 });
@@ -117,6 +123,7 @@ render() {
 console.log(this.props.sched)
 /*if(this.props.sched)*/
 	return ( 
+	<View>
 		<Swiper>
 			<View style={styles.container} >
 				<Text style={styles.north}>Northbound Trains (Swipe for Southbound)</Text>	
@@ -126,11 +133,9 @@ console.log(this.props.sched)
 					data={this.state.north}		 
 					renderItem={({item}) => 
 					<View style={styles.train}>
-
 							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
 								<Text style= {{textAlign: 'center', fontSize: 12,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
 							</View>
-
 							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
 								<Text style= {{textAlign: 'center', fontSize: 12, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - this.state.timeStamp) / 60) + " minutes"}</Text>
 							</View>
@@ -146,7 +151,6 @@ console.log(this.props.sched)
 					data={this.state.south}		 
 					renderItem={({item}) => 
 					<View style={styles.train}>
-
 							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
 								<Text style= {{textAlign: 'center', fontSize: 12,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
 							</View>
@@ -157,9 +161,10 @@ console.log(this.props.sched)
 						</View>}
 					 keyExtractor={item => item.departureTime}
 				/>			 
-			</View>	
-	
+			</View>		
 		</Swiper>
+	</View>
+
 		)	
 	}
 }

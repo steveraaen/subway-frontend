@@ -4,26 +4,24 @@ import {
   AppRegistry,
   AppState,
   Dimensions,
-  Platform,
   StyleSheet,
   Text,
   View,
-  Button,
-  ScrollView
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import axios from 'axios';
-import lineColors from './helpers.js';
-import StopsContB from './StopsContB.js';
+import lineColors from '../helpers.js';
+import StopsCont from './StopsCont.js';
 import Schedule from './Schedule.js';
-import Splash from'./Splash.js';
-import GeoWatch from'./GeoWatch.js';
+import Status from'./Status.js';
 
-class AppB extends Component<{}> {
+class App extends Component<{}> {
     static navigationOptions = {
-   headerTitle: 'Nearest Subway Stops',
-  headerStyle: { backgroundColor: 'white' },
-  headerTitleStyle: { color: 'gray', fontSize: 22 },
+     headerTitle: 'Touch a stop to see upcoming trains',
+     headerStyle: { backgroundColor: 'white' },
+     headerTitleStyle: { color: 'gray', fontSize: 22 },
   };
   constructor(props) {
     super(props);
@@ -34,9 +32,18 @@ class AppB extends Component<{}> {
       stops: null
     }
     this.getStops = this.getStops.bind(this);
+    this.getStatus = this.getStatus.bind(this);
     this.updatePosition = this.updatePosition.bind(this)
   }
- 
+  getStatus() {
+    return axios.get('https://subs-backend.herokuapp.com/api/status', {
+    }).then((resp) => {
+
+      this.setState({
+        status: resp
+      })
+    })
+  }
   getStops(lnglat) {
    /* var stopsURL= 'http://127.0.0.1:5000/api/stops/'  */
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
@@ -50,6 +57,7 @@ class AppB extends Component<{}> {
         for(let i = 0; i < response.data.length; i++) {
           var resObj = response.data[i].properties;         
           var stpLine = resObj.stop_id[0];
+
           for(let lne in this.state.lineColors) {
             if(this.state.lineColors[lne].routeArray.includes(stpLine)) {
               curColor = this.state.lineColors[lne].color
@@ -59,13 +67,11 @@ class AppB extends Component<{}> {
           }
         }
         this.setState({ data: response.data,
-                        loading: false 
+                        loading: true 
                       });
       })
       .catch(err => console.log(err));
 } 
-
-
     componentWillMount() {
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
@@ -74,10 +80,10 @@ class AppB extends Component<{}> {
                 latitude: pos.coords.latitude,
                 lnglat: [pos.coords.longitude, pos.coords.latitude],
                 accuracy: pos.coords.accuracy,
-                heading: pos.coords.heading
+                heading: pos.coords.heading,
             })
             this.getStops()
-            this.updatePosition()
+            
         }.bind(this))
 
 
@@ -89,21 +95,24 @@ class AppB extends Component<{}> {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           heading: position.coords.heading,
-          error: null,
+         error: null,
         });
       },
       (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000, distanceFilter: 100 },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 3000, distanceFilter: 50 },
       function(res) {
-        this.getStops()
+        this.updatePosition()
       })
       
   }
   componentDidMount() {
      this.getStops()
+     this.getStatus()
      
   }
-
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchId);
+  }
   render() {
       
     var width = Dimensions.get('window').width;
@@ -111,20 +120,27 @@ class AppB extends Component<{}> {
     const { navigate } = this.props.navigation;
    if(this.state.data) {
     return (
+<View>
+  <TouchableOpacity
+    onPress={() => navigate('Status', {status: this.state.status})}
+    style={styles.header}>
+    <View>
+      <Text style={{fontSize: 20}}>Hello</Text>
+    </View>
+  </TouchableOpacity>
+
 <ScrollView style={{height: height}} >
   <View style={styles.container}>
-    <View >
-        <Text style={styles.instructions}>
-          Touch a stop to view the schedule
-        </Text>
-    </View>
+
     <View style={{flex: 1, justifyContent: 'flex-start'}}>
-        <StopsContB stops={this.state.data} navigation={this.props.navigation}/>
+        <StopsCont stops={this.state.data} navigation={this.props.navigation}/>
     </View>
 
     
   </View>
   </ScrollView>
+</View>
+
     );
   } else {
         return (
@@ -132,7 +148,6 @@ class AppB extends Component<{}> {
 
         <View><Text>.. Loading </Text></View>
       </View>
-
     );
   }
   }
@@ -156,12 +171,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     marginTop: 5,
   },
+  header: {
+    backgroundColor: 'gray',
+    marginTop: 15
+  }
 });
 
 export const frontend = StackNavigator({
-  AppB: { screen: AppB },
-  GeoWatch: { screen: GeoWatch },
-  Splash: { screen: Splash },
+  App: { screen: App },
+  Status: { screen: Status }
 });
 
 AppRegistry.registerComponent('frontend', () => frontend);

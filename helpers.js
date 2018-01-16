@@ -1,6 +1,7 @@
 /*npm cache clean*/
 /*watchman watch-del-all && rm -rf node_modules/ && npm cache clean && npm install && npm start -- --reset-cache
 */
+/*mongoimport -h ds163745.mlab.com:63745 -d heroku_tm8f0g3q -c transfers -u steve -p modernwater360 --file transfers.csv --type csv --headerline*/
 var lineColors = {
   ace: {
     color: "#0039A6", 
@@ -32,7 +33,7 @@ var lineColors = {
   },
   fourFiveSix: {
     color: "#00933C", 
-    routeArray: ["4", "5", "6"]
+    routeArray: ["4", "5", "6", "5X"]
   },
   l: {
     color: "#A7A9AC",
@@ -44,3 +45,5 @@ var lineColors = {
   }
   }
   export default lineColors
+
+  
