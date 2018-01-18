@@ -19,9 +19,9 @@ var lineColors = {
     color: "#996633", 
     routeArray: ["J", "Z"]
   },
-  nqr: {
+  nqrw: {
     color: "#FCCC0A", 
-    routeArray: ["N", "Q", "R"]
+    routeArray: ["N", "Q", "R", "W"]
   },
   s: {
     color: "#808183", 

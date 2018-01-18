@@ -32,19 +32,8 @@ class App extends Component<{}> {
       stops: null
     }
     this.getStops = this.getStops.bind(this);
-   /* this.getStatus = this.getStatus.bind(this);*/
- 
   }
-/*  getStatus() {
-    return axios.get('https://subs-backend.herokuapp.com/api/status', {
-    }).then((resp) => {
 
-      this.setState({
-        status: resp,
-        
-      })
-    })
-  }*/
   getStops(lnglat) {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
@@ -82,31 +71,32 @@ class App extends Component<{}> {
                 position: pos.coords
             })
         console.log(this.state.latitude)
-            this.getStops()
-                    
-        }.bind(this))
-    }
 
-  componentDidMount() {
       this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         this.setState({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
+          lnglat: [position.coords.longitude, position.coords.latitude],
           position: position.coords,
          error: null,
         });
         console.log(this.state.latitude)
       },
       (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 3000, distanceFilter: 50 },
+      { enableHighAccuracy: true, timeout: 20000,  distanceFilter: 5 },
 )
+      this.getStops()
+        }.bind(this))
+    }
+
+  componentDidMount() {
+
+       
   }
-  componentWillUpdate() {
-     this.getStops()
-  }
+
   componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
+    navigator.geolocation.clearWatch(this.props.watchId);
   }
   render() {
       
@@ -127,7 +117,7 @@ class App extends Component<{}> {
 <ScrollView style={{height: height}} >
   <View style={styles.container}>
     <View style={{flex: 1, justifyContent: 'flex-start'}}>
-        <StopsCont stops={this.state.data} navigation={this.props.navigation} position={this.state.position}/>
+        <StopsCont stops={this.state.data} watchId={this.watchId} navigation={this.props.navigation} position={this.state.position}/>
     </View>    
   </View>
   </ScrollView>

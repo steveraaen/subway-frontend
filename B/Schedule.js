@@ -11,82 +11,28 @@ import {
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import Swiper from 'react-native-swiper';
+import axios from 'axios';
 import moment from'moment';
 import lineColors from'../helpers.js';
 
 export default class Schedule extends Component {
 constructor(props) {
 	super(props);
-	this.props.getSubways()	
-	this.state = {
-		loading: false,
-		timeStamp: Math.round((new Date()).getTime() / 1000)
-			
-	}
-	this.freshSched = this.freshSched.bind(this)
-	mixins: [TimerMixin]
-   
+
+	/*this.freshSched = this.freshSched.bind(this)
+	this.getSubways = this.getSubways.bind(this)
+	mixins: [TimerMixin]  */
 }
- freshSched() {
-	var schedObj = this.props.sched;
-	console.log(this.props)
-	for(let trn in schedObj) {
-	var north = schedObj[trn].N
-	var south = schedObj[trn].S
-
-	function clean(arr) {
-	return arr.timeDif > 0
+componentWillReceiveProps(nextProps) {
+	if(this.props.stops) {
+		console.log(this.props)
+/*		this.setState({
+			id: this.nextProps.stops[0].properties.stop_id,
+			feed:this.nextProps.stops[0].properties.stop_feed		
+	})*/
 	}
-	for(let n in north) {
-		var nId = north[n].routeId		
-		for(let lc in lineColors){
-			if(lineColors[lc].routeArray.includes(nId)) {				
-				north[n].color = lineColors[lc].color
-			}
-		}
-		north[n].timeStamp = Math.round((new Date()).getTime() / 1000)
-		north[n].timeDif = north[n].departureTime - north[n].timeStamp
-		} 
-		var cleanNorth = north.filter(clean).slice(0, 4)
-	
+}
 
-	/*this.setState({north: north})	*/
-	for(let s in south) {
-		var sId = south[s].routeId		
-		for(let lc in lineColors){
-			if(lineColors[lc].routeArray.includes(sId)) {				
-				south[s].color = lineColors[lc].color
-			}
-		}
-	south[s].timeStamp = Math.round((new Date()).getTime() / 1000)
-	south[s].timeDif = south[s].departureTime - south[s].timeStamp
-	}
-	var cleanSouth = south.filter(clean).slice(0, 4)
-	}
-	this.setState({ 
-				north: cleanNorth,
-				south: cleanSouth
-				})
- }
-
-componentWillReceiveProps(){
-	this.freshSched()
-
-	}
- componentDidMount() {
-
- 	this.props.getSubways().catch((error)=>{
-     console.log("Api call error");
-     alert(error.message);
-  });
- 	var intA = this.setInterval(() => {
- 		this.freshSched()
-		
-}, 30000) 	
- }
-  	componentWillUnmount() {
-	clearInterval(this.intA);
- 	}
 render() {
     const width = Dimensions.get('window').width;
     const height = Dimensions.get('window').height; 
@@ -95,14 +41,14 @@ render() {
   container: {
     flex: 1,  
     flexDirection: 'column',
+    height: 200,
     backgroundColor: '#5B5B5B',
     paddingTop: 2,
     paddingBottom: 2,
-    marginTop:10,
     marginBottom: 2
   },
   north: {
-  	fontSize: 12,
+  	fontSize: 16,
   	color: 'white',
   	fontWeight: 'bold',
   	textAlign: 'center'
@@ -119,55 +65,58 @@ render() {
   }
 
 });
-
-console.log(this.props.sched)
 /*if(this.props.sched)*/
+if(this.props.north) {
 	return ( 
-	<View>
+
 		<Swiper>
-			<View style={styles.container} >
-				<Text style={styles.north}>Northbound Trains (Swipe for Southbound)</Text>	
+					<View style={styles.container} >
+				<Text style={styles.north}>Southbound Trains</Text>	
 				<FlatList
 					style={{marginTop: 2, paddingTop: 2, }}
 					header={"Northbound Trains"}
-					data={this.state.north}		 
+					data={this.props.south}		 
 					renderItem={({item}) => 
 					<View style={styles.train}>
 							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
-								<Text style= {{textAlign: 'center', fontSize: 12,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
+								<Text style= {{textAlign: 'center', fontSize: 14,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
+							</View>
+
+							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
+								<Text style= {{textAlign: 'center', fontSize: 14, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60) + " minutes"}</Text>
+							</View>
+						</View>}
+					 keyExtractor={item => item.departureTime}
+				/>			 
+			</View>
+			<View style={styles.container} >
+			<Text style={styles.north}>Northbound Trains</Text>	
+			
+				<FlatList
+					style={{marginTop: 2, paddingTop: 2, }}
+					header={"Northbound Trains"}
+					data={this.props.north}		 
+					renderItem={({item}) => 
+					<View style={styles.train}>
+							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
+								<Text style= {{textAlign: 'center', fontSize: 16,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
 							</View>
 							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
-								<Text style= {{textAlign: 'center', fontSize: 12, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - this.state.timeStamp) / 60) + " minutes"}</Text>
+								<Text style= {{textAlign: 'center', fontSize: 14, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60) + " minutes"}</Text>
 							</View>
 						</View>}
 					 keyExtractor={item => item.departureTime}
 				/>			 
 			</View>	
-			<View style={styles.container} >
-				<Text style={styles.north}>Southbound Trains (Swipe for Northbound)</Text>	
-				<FlatList
-					style={{marginTop: 2, paddingTop: 2, }}
-					header={"Northbound Trains"}
-					data={this.state.south}		 
-					renderItem={({item}) => 
-					<View style={styles.train}>
-							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
-								<Text style= {{textAlign: 'center', fontSize: 12,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
-							</View>
-
-							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
-								<Text style= {{textAlign: 'center', fontSize: 12, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - this.state.timeStamp) / 60) + " minutes"}</Text>
-							</View>
-						</View>}
-					 keyExtractor={item => item.departureTime}
-				/>			 
-			</View>		
 		</Swiper>
-	</View>
-
-		)	
-	}
+	
+		)
+		} else return (
+			<View><Text>Waiting</Text></View>
+			)	
 }
+	}
+
 reactMixin(Schedule.prototype, TimerMixin);
 
 
