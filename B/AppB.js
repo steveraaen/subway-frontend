@@ -17,13 +17,13 @@ import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
 import lineColors from '../helpers.js';
 import Schedule from './Schedule.js';
-import Status from'./Status.js';
+import FadeInView from './AppC.js';
 
 class AppB extends Component {
     static navigationOptions = {
-     headerTitle: 'Closest Subway Stations',
-     headerStyle: { backgroundColor: 'white' },
-     headerTitleStyle: { color: 'gray', fontSize: 22 },
+     headerTitle: 'Nearby Subway Arrivals',
+     headerStyle: { backgroundColor: 'black' },
+     headerTitleStyle: {  color: 'white', fontSize:24, fontWeight: 'bold', fontStyle: 'italic' },
   };
   constructor(props) {
     super(props);
@@ -36,6 +36,7 @@ class AppB extends Component {
     this.getSchedule = this.getSchedule.bind(this)
     this.freshSched = this.freshSched.bind(this)
     mixins: [TimerMixin]
+    console.log(this.state.appState)
   }
 // ---------------------------------------------------------
   getStops(lnglat) {
@@ -59,10 +60,10 @@ class AppB extends Component {
             }
           }
         }
-        console.log(response.data[0].properties.stop_id)
         this.setState({ data: response.data,
                         id: response.data[0].properties.stop_id,
                         feed: response.data[0].properties.stop_feed,
+                        name: response.data[0].properties.stop_name,
                         loading: true 
                       },() => {
                         this.getSchedule(this.state.id, this.state.feed)
@@ -94,16 +95,23 @@ getSchedule(id, line) {
   var schedObj = this.state.schedule;
 
   for(let trn in schedObj) {
+    console.log(trn)
+    console.log([trn])
+    console.log(schedObj[trn])
   var north = schedObj[trn].N
   var south = schedObj[trn].S
+  
 
   function clean(arr) {
   return arr.timeDif > 0
   }
+
   for(let n in north) {
-    var nId = north[n].routeId    
+    var nameId = north[n].routeId
+    var routeId = Object.keys(schedObj)
+  
     for(let lc in lineColors){
-      if(lineColors[lc].routeArray.includes(nId)) {       
+      if(lineColors[lc].routeArray.includes(nameId)) {       
         north[n].color = lineColors[lc].color
       }
     }
@@ -123,8 +131,10 @@ getSchedule(id, line) {
   south[s].timeDif = south[s].departureTime - south[s].timeStamp
   }
   var cleanSouth = south.filter(clean).slice(0, 4)
+
   }
-  this.setState({ 
+
+  this.setState({
         north: cleanNorth,
         south: cleanSouth,
         timeStamp: Math.round((new Date()).getTime() / 1000)
@@ -150,12 +160,12 @@ getSchedule(id, line) {
           position: position.coords,
          error: null,
         }, () => {
-          this.getStops()
+          this.getStops(this.state.longitude, this.state.latitude)
         });
         console.log(this.state.latitude)
       },
       (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0, distanceFilter: 5 },
+      { enableHighAccuracy: true,  distanceFilter: 20 },
 )
       
         }.bind(this)) 
@@ -166,7 +176,7 @@ getSchedule(id, line) {
         north: this.state.north,
         south: this.state.south
         })    
-}, 15000)      
+}, 30000)      
     }
 
 // ----------------------------------------------------
@@ -174,10 +184,11 @@ getSchedule(id, line) {
 componentWillUnmount() {
   clearInterval(this.intA);
   }
-  handlePress(id, feed) {
+  handlePress(id, feed, name) {
      this.setState({
       id: id,
       feed: feed,
+      name: name
     }, () => {
       this.getSchedule(this.state.id, this.state.feed)
     })
@@ -189,33 +200,32 @@ componentWillUnmount() {
     var width = Dimensions.get('window').width;
     var height = Dimensions.get('window').height;     
     return  ( 
-
-      <View style={{marginRight: 20, marginLeft: 20,}}>
-
-        <Text style={{textAlign: 'center', fontSize: 18, fontWeight: 'bold', fontStyle: 'italic', paddingTop: 20}}>Touch a stop to see the schedule</Text>
-      <ScrollView style={{height: 190, marginTop: 10}}>
+ 
+      <View style={{ backgroundColor: 'black',}}>      
+      <ScrollView style={{height: 270,  marginBottom: 6}}>
       <FlatList 
-        style={{marginTop: 10}}
+      scrollEventThrottle={1}
+        style={{marginTop: 6}}
         data={this.state.data} 
         renderItem={({item}) => 
           <TouchableOpacity 
             onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name)}      
-            style={{ height: 40, alignSelf: 'stretch', marginTop: 4,  paddingBottom: 5, backgroundColor: item.properties.color}}>
+            style={{ alignSelf: 'stretch', marginTop: 4, marginBottom: 4, paddingBottom: 5, backgroundColor: item.properties.color}}>
               <View style={{justifyContent: 'center', borderWidth: 0}} >
-                <Text style={{fontSize: 16, paddingLeft: 5,fontWeight: 'bold', textAlign: "center"}} >{item.properties.stop_name}</Text>
+                <Text style={{fontSize: 20, paddingLeft: 5,fontWeight: 'bold', textAlign: "center", paddingTop: 2, paddingBottom: 2}} >{item.properties.stop_name}</Text>
               </View>
               <View style={{justifyContent: 'center'}} >
-                <Text style={{fontSize: 14, paddingLeft: 5,fontWeight: 'bold', textAlign: "center"}} >{item.distance.dist.toFixed(3) + " miles"}</Text>
+                <Text style={{fontSize: 18, paddingLeft: 5,fontWeight: 'bold', textAlign: "center", paddingTop: 2, paddingBottom: 2}} >{item.distance.dist.toFixed(3) + " miles"}</Text>
               </View>
           </TouchableOpacity>}
         keyExtractor={item => item.properties.stop_id}
       />
       </ScrollView>
-      <View style={{height: 280, marginTop: 20}}>
-      <Schedule stops={this.state.data} north={this.state.north} south={this.state.south}/>
+      <View style={{height: 400, marginTop: 20}}>
+      <Schedule stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.latitude} lng={this.state.longitude}/>
     </View>
     </View>
-    
+ 
     )
     console.log(item)
   }
@@ -224,9 +234,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    backgroundColor: '#5B5B5B',
-    marginTop: 16,
-    marginBottom: 2,
+    marginTop: 18,
     paddingBottom: 2
   },
   instructions: {
@@ -235,16 +243,16 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 5,
-    marginTop: 5,
   },
-  header: {
-    backgroundColor: 'gray',
-    marginTop: 15
-  }
+
 });
 export const frontend = StackNavigator({
-  AppB: { screen: AppB }
+  AppB: { 
+    screen: AppB,
+   },
+   AppC: {
+    screen: AppB,
+   }
 });
 AppRegistry.registerComponent('frontend', () => frontend);
 

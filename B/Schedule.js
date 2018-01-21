@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  Animated,
   StyleSheet,
   Text,
   View,
@@ -13,36 +14,46 @@ import TimerMixin from 'react-timer-mixin'
 import Swiper from 'react-native-swiper';
 import axios from 'axios';
 import moment from'moment';
+import MapView from 'react-native-maps';
 import lineColors from'../helpers.js';
+import FadeInView from'./AppC.js';
 
 export default class Schedule extends Component {
 constructor(props) {
 	super(props);
-
-	/*this.freshSched = this.freshSched.bind(this)
-	this.getSubways = this.getSubways.bind(this)
-	mixins: [TimerMixin]  */
-}
-componentWillReceiveProps(nextProps) {
-	if(this.props.stops) {
-		console.log(this.props)
-/*		this.setState({
-			id: this.nextProps.stops[0].properties.stop_id,
-			feed:this.nextProps.stops[0].properties.stop_feed		
-	})*/
+	this.state={
+		fadeAnim: new Animated.Value(0),
 	}
 }
-
+componentWillUpdate() {
+	if(this.props.stops && this.props.north && this.props.south) {
+	
+}
+}
+componentWillReceiveProps() {
+/*console.log(this.props)*/
+}
 render() {
+
+
+
     const width = Dimensions.get('window').width;
     const height = Dimensions.get('window').height; 
+
+    function time(t) {
+    	if(time < 30) {
+    		color: 'yellow'
+    	} else {
+    		color: ''
+    	}
+    }
 
     const styles = StyleSheet.create({
   container: {
     flex: 1,  
     flexDirection: 'column',
-    height: 200,
-    backgroundColor: '#5B5B5B',
+    height: 240,
+    backgroundColor: 'black',
     paddingTop: 2,
     paddingBottom: 2,
     marginBottom: 2
@@ -51,19 +62,24 @@ render() {
   	fontSize: 16,
   	color: 'white',
   	fontWeight: 'bold',
-  	textAlign: 'center'
+  	textAlign: 'center',
+  	paddingBottom: 6
+  },
+  south: {
+  	fontSize: 16,
+  	color: 'white',
+  	fontWeight: 'bold',
+  	textAlign: 'left',
   },
   train: {
   	backgroundColor: 'black', 
   	paddingTop: 2,
-  	marginTop: 2
-  },
-  debug: {
-  	height: 15,
-  	backgroundColor: 'black',
-  	marginTop: 20
-  }
+  	marginTop: 2,
 
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
 });
 /*if(this.props.sched)*/
 if(this.props.north) {
@@ -71,52 +87,60 @@ if(this.props.north) {
 
 		<Swiper>
 					<View style={styles.container} >
-				<Text style={styles.north}>Southbound Trains</Text>	
+				<Text style={styles.north}>{this.props.name}   -    South</Text>	
 				<FlatList
 					style={{marginTop: 2, paddingTop: 2, }}
 					header={"Northbound Trains"}
 					data={this.props.south}		 
 					renderItem={({item}) => 
-					<View style={styles.train}>
+					<FadeInView>
 							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
-								<Text style= {{textAlign: 'center', fontSize: 14,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
+								<Text style= {{textAlign: 'center', fontSize: 18,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
 							</View>
 
 							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
 								<Text style= {{textAlign: 'center', fontSize: 14, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60) + " minutes"}</Text>
 							</View>
-						</View>}
+						</FadeInView>}
 					 keyExtractor={item => item.departureTime}
 				/>			 
 			</View>
 			<View style={styles.container} >
-			<Text style={styles.north}>Northbound Trains</Text>	
+			<Text style={styles.north}>North    -    {this.props.name}</Text>	
 			
 				<FlatList
 					style={{marginTop: 2, paddingTop: 2, }}
 					header={"Northbound Trains"}
 					data={this.props.north}		 
 					renderItem={({item}) => 
-					<View style={styles.train}>
+					<FadeInView>
 							<View style= {{ flex: 1, justifyContent: 'center', marginTop: 4}}>
-								<Text style= {{textAlign: 'center', fontSize: 16,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
+								<Text style= {{textAlign: 'center', fontSize: 18,  fontWeight: 'bold', color: 'black',marginLeft: 3, marginRight: 3, backgroundColor: item.color }}> {item.routeId}</Text>
 							</View>
 							<View style={{flex: 1, marginTop:8, paddingBottom: 2, marginBottom: 2,justifyContent: 'center'}}>
 								<Text style= {{textAlign: 'center', fontSize: 14, color: 'white', fontWeight: 'bold'}}> {moment.unix(item.departureTime).format("HH:mm") + "                   "  +  Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60) + " minutes"}</Text>
 							</View>
-						</View>}
+						</FadeInView>}
 					 keyExtractor={item => item.departureTime}
 				/>			 
 			</View>	
+{/*			      <MapView
+			      style={styles.map}
+				    initialRegion={{
+				      latitude: this.props.lat,
+				      longitude: this.props.lng,
+				      latitudeDelta: 0.0322,
+				      longitudeDelta: 0.0121,
+    }}
+  />*/}
 		</Swiper>
 	
 		)
 		} else return (
 			<View><Text>Waiting</Text></View>
 			)	
-}
+		}
 	}
-
 reactMixin(Schedule.prototype, TimerMixin);
 
 

@@ -8,10 +8,12 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "install": "^0.10.2",
     "moment": "^2.20.1",
     "react": "16.0.0",
     "react-mixin": "^4.0.0",
     "react-native": "0.51.0",
+    "react-native-maps": "^0.19.0",
     "react-native-swiper": "^1.5.13",
     "react-navigation": "^1.0.0-beta.22",
     "react-timer-mixin": "^0.13.3"
