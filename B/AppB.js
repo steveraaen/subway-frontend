@@ -1,4 +1,4 @@
-
+/*bwgv-ekpr-tnpf-rbfj*/
 import React, { Component } from 'react';
 import {
   AppRegistry,
@@ -15,36 +15,48 @@ import { StackNavigator } from 'react-navigation';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import lineColors from '../helpers.js';
 import Schedule from './Schedule.js';
 import FadeInView from './AppC.js';
+import Menu from './MainMenu.js';
 
 class AppB extends Component {
     static navigationOptions = {
-     headerTitle: 'Nearby Subway Arrivals',
-     headerStyle: { backgroundColor: 'black' },
-     headerTitleStyle: {  color: 'white', fontSize:24, fontWeight: 'bold', fontStyle: 'italic' },
+     headerTitle: 'Real-Time Subways',
+     headerStyle: { backgroundColor: 'gray' },
+     headerTitleStyle: {  color: 'white', fontSize:22, fontWeight: 'bold', fontStyle: 'italic'}
   };
   constructor(props) {
     super(props);
     this.state = {
       appState: AppState.currentState,
-      lnglat: null,
-      lineColors: lineColors
+      uLnglat: null,
+      lineColors: lineColors,
+      modalVisible: false
     }
     this.getStops = this.getStops.bind(this)
     this.getSchedule = this.getSchedule.bind(this)
     this.freshSched = this.freshSched.bind(this)
+    this.openModal = this.openModal.bind(this)
+    this.closeModal = this.closeModal.bind(this)
     mixins: [TimerMixin]
     console.log(this.state.appState)
   }
 // ---------------------------------------------------------
-  getStops(lnglat) {
+  openModal() {
+    this.setState({modalVisible:true});
+  }
+
+  closeModal() {
+    this.setState({modalVisible:false});
+  }
+  getStops(lng,lat) {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
             params: {
-                lng: this.state.longitude,
-                lat: this.state.latitude,               
+                lng: this.state.uLongitude,
+                lat: this.state.uLatitude,               
             }
         })    
       .then((response) => {
@@ -64,7 +76,11 @@ class AppB extends Component {
                         id: response.data[0].properties.stop_id,
                         feed: response.data[0].properties.stop_feed,
                         name: response.data[0].properties.stop_name,
-                        loading: true 
+                        coordinates: response.data[0].geometry.coordinates,
+                        title: response.data[0].properties.stop_name,
+                        distance: response.data[0].distance.dist,
+                        route: response.data[0].properties.stop_id[0],
+                       
                       },() => {
                         this.getSchedule(this.state.id, this.state.feed)
                       });
@@ -145,19 +161,19 @@ getSchedule(id, line) {
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
-                longitude: pos.coords.longitude,
-                latitude: pos.coords.latitude,
-                lnglat: [pos.coords.longitude, pos.coords.latitude],
-                position: pos.coords
+                uLongitude: pos.coords.longitude,
+                uLatitude: pos.coords.latitude,
+                uLnglat: [pos.coords.longitude, pos.coords.latitude],
+                uPosition: pos.coords
             })
         console.log(this.state.latitude)
 
       this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          position: position.coords,
+          uLatitude: position.coords.latitude,
+          uLongitude: position.coords.longitude,
+          uPosition: position.coords,
          error: null,
         }, () => {
           this.getStops(this.state.longitude, this.state.latitude)
@@ -184,11 +200,15 @@ getSchedule(id, line) {
 componentWillUnmount() {
   clearInterval(this.intA);
   }
-  handlePress(id, feed, name) {
+  handlePress(id, feed, name, coordinates, color, distance, route) {
      this.setState({
       id: id,
       feed: feed,
-      name: name
+      name: name,
+      coordinates: coordinates,
+      color: color,
+      distance: distance,
+      route: route
     }, () => {
       this.getSchedule(this.state.id, this.state.feed)
     })
@@ -196,20 +216,29 @@ componentWillUnmount() {
 
 // ------------------------------------------------
   render() {
-
+const { navigate } = this.props.navigation;
     var width = Dimensions.get('window').width;
     var height = Dimensions.get('window').height;     
     return  ( 
- 
-      <View style={{ backgroundColor: 'black',}}>      
-      <ScrollView style={{height: 270,  marginBottom: 6}}>
+
+      <View style={{backgroundColor:'black'}}> 
+      <TouchableOpacity
+        onPress={() => navigate('Menu', {props: this.state})}
+      >
+        <Text style={{ textAlign: 'right', marginRight: 10, paddingTop: 10}}>
+         <Ionicons name="ios-navigate-outline" style={{flex: 1, fontSize: 30, color: 'white', fontWeight: 'bold'}}></Ionicons>  
+        </Text>  
+         </TouchableOpacity>   
+      <ScrollView 
+      style={{height: 270,  marginBottom: 6}}
+      pagingEnabled={true}>
       <FlatList 
       scrollEventThrottle={1}
         style={{marginTop: 6}}
         data={this.state.data} 
         renderItem={({item}) => 
           <TouchableOpacity 
-            onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name)}      
+            onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0])}      
             style={{ alignSelf: 'stretch', marginTop: 4, marginBottom: 4, paddingBottom: 5, backgroundColor: item.properties.color}}>
               <View style={{justifyContent: 'center', borderWidth: 0}} >
                 <Text style={{fontSize: 20, paddingLeft: 5,fontWeight: 'bold', textAlign: "center", paddingTop: 2, paddingBottom: 2}} >{item.properties.stop_name}</Text>
@@ -222,7 +251,7 @@ componentWillUnmount() {
       />
       </ScrollView>
       <View style={{height: 400, marginTop: 20}}>
-      <Schedule stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.latitude} lng={this.state.longitude}/>
+      <Schedule stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route}/>
     </View>
     </View>
  
@@ -245,6 +274,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+
 });
 export const frontend = StackNavigator({
   AppB: { 
@@ -252,6 +282,9 @@ export const frontend = StackNavigator({
    },
    AppC: {
     screen: AppB,
+   },
+   Menu: {
+    screen: Menu,
    }
 });
 AppRegistry.registerComponent('frontend', () => frontend);

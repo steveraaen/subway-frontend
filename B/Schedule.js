@@ -26,16 +26,27 @@ constructor(props) {
 	}
 }
 componentWillUpdate() {
-	if(this.props.stops && this.props.north && this.props.south) {
-	
-}
+
 }
 componentWillReceiveProps() {
-/*console.log(this.props)*/
+	if(this.props.LatLng) {
+	 const latlng = {
+	 	latitude: this.props.LatLng[1],
+	 	longitude: this.props.LatLng[0]
+	 }
+	 console.log(latlng)
+	 this.setState({
+	 	coordinate: latlng,
+	 	userLocation: {
+	 		latitude: this.props.lat,
+	 		longitude: this.props.lng
+	 	}
+	 })
+}
+
 }
 render() {
-
-
+/*console.log(this.props)*/
 
     const width = Dimensions.get('window').width;
     const height = Dimensions.get('window').height; 
@@ -81,11 +92,14 @@ render() {
     ...StyleSheet.absoluteFillObject,
   },
 });
+
 /*if(this.props.sched)*/
-if(this.props.north) {
+if(this.props.north || this.props.south) {
 	return ( 
 
-		<Swiper>
+		<Swiper
+		loop={true}
+		index={0}>
 					<View style={styles.container} >
 				<Text style={styles.north}>{this.props.name}   -    South</Text>	
 				<FlatList
@@ -123,16 +137,34 @@ if(this.props.north) {
 						</FadeInView>}
 					 keyExtractor={item => item.departureTime}
 				/>			 
-			</View>	
-{/*			      <MapView
-			      style={styles.map}
-				    initialRegion={{
+			</View>
+			<View style={styles.map}>	
+{			      <MapView
+			      	style={styles.map}
+			      	zoomEnabled={true}
+						rotateEnabled={false}
+						scrollEnabled={false}
+				   	initialRegion={{
 				      latitude: this.props.lat,
 				      longitude: this.props.lng,
 				      latitudeDelta: 0.0322,
 				      longitudeDelta: 0.0121,
-    }}
-  />*/}
+    }}>
+    <MapView.Marker
+    pinColor={'blue'}
+      coordinate={this.state.userLocation}
+      title={"You are here"}
+      /*description={marker.description}*/
+    />
+    <MapView.Marker
+    pinColor={this.props.color}
+      coordinate={this.state.coordinate}
+      title={`The ${this.props.route} ${this.props.name}`}
+      /*description={marker.description}*/
+    />
+
+  </MapView>}
+ </View>
 		</Swiper>
 	
 		)
@@ -142,7 +174,6 @@ if(this.props.north) {
 		}
 	}
 reactMixin(Schedule.prototype, TimerMixin);
-
 
 
 
