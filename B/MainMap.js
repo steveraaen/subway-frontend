@@ -11,14 +11,14 @@ import {
   TouchableOpacity
 } from 'react-native';
 import MapView from 'react-native-maps';
-export default class Menu extends Component {
+export default class MainMap extends Component {
   constructor(props) {
     super(props)
     this.state = {
     
   };
   }
-componentWillMount() {
+/*componentWillMount() {
   console.log(this.props.navigation.state.params.props.coordinates[0])
   this.setState({
     stopLocation: 
@@ -27,7 +27,7 @@ componentWillMount() {
         latitude: this.props.navigation.state.params.props.coordinates[1]
       }
   })
-}
+}*/
 
 
   render() {
@@ -38,26 +38,7 @@ const styles= StyleSheet.create({
     })
     return (
       <View style={styles.map}> 
-          <MapView
-              style={styles.map}
-              zoomEnabled={true}
-            rotateEnabled={false}
-            scrollEnabled={false}
-            initialRegion={{
-              latitude: this.props.navigation.state.params.props.uLatitude,
-              longitude: this.props.navigation.state.params.props.uLongitude,
-              latitudeDelta: 0.0322,
-              longitudeDelta: 0.0121,
-    }}>
-    <MapView.Marker
-    pinColor={this.props.color}
-      coordinate={this.state.stopLocation}
-      title={`The ${this.props.route} ${this.props.name}`}
-      /*description={marker.description}*/
-    />
 
-
-  </MapView>
  </View>
 )
 }

@@ -15,8 +15,8 @@ import Swiper from 'react-native-swiper';
 import axios from 'axios';
 import moment from'moment';
 import MapView from 'react-native-maps';
-import lineColors from'../helpers.js';
-import FadeInView from'./AppC.js';
+import lineColors from'../colors.js';
+import FadeInView from'./Animations.js';
 
 export default class Schedule extends Component {
 constructor(props) {

@@ -16,16 +16,20 @@ import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import lineColors from '../helpers.js';
+import SplashScreen from 'react-native-splash-screen';
+import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
-import FadeInView from './AppC.js';
-import Menu from './MainMenu.js';
+import FadeInView from './Animations.js';
+import MainMap from './MainMap.js';
 
 class AppB extends Component {
     static navigationOptions = {
+      header: null,
+     headerMode: 'screen',
      headerTitle: 'Real-Time Subways',
-     headerStyle: { backgroundColor: 'gray' },
-     headerTitleStyle: {  color: 'white', fontSize:22, fontWeight: 'bold', fontStyle: 'italic'}
+     headerStyle: { backgroundColor: 'gray', height: 50 },
+     headerTitleStyle: {  color: 'white', fontSize:22, fontWeight: 'bold', fontStyle: 'italic'},
+
   };
   constructor(props) {
     super(props);
@@ -38,19 +42,11 @@ class AppB extends Component {
     this.getStops = this.getStops.bind(this)
     this.getSchedule = this.getSchedule.bind(this)
     this.freshSched = this.freshSched.bind(this)
-    this.openModal = this.openModal.bind(this)
-    this.closeModal = this.closeModal.bind(this)
     mixins: [TimerMixin]
     console.log(this.state.appState)
   }
 // ---------------------------------------------------------
-  openModal() {
-    this.setState({modalVisible:true});
-  }
 
-  closeModal() {
-    this.setState({modalVisible:false});
-  }
   getStops(lng,lat) {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
@@ -158,6 +154,7 @@ getSchedule(id, line) {
  }
 // ----------------------------------------------------
     componentWillMount() {
+      
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -192,10 +189,14 @@ getSchedule(id, line) {
         north: this.state.north,
         south: this.state.south
         })    
-}, 30000)      
+}, 30000) 
+    
     }
 
 // ----------------------------------------------------
+  componentDidMount() {
+      SplashScreen.hide();
+  }
 
 componentWillUnmount() {
   clearInterval(this.intA);
@@ -216,21 +217,27 @@ componentWillUnmount() {
 
 // ------------------------------------------------
   render() {
-const { navigate } = this.props.navigation;
+  const { navigate } = this.props.navigation;
     var width = Dimensions.get('window').width;
     var height = Dimensions.get('window').height;     
     return  ( 
 
-      <View style={{backgroundColor:'black'}}> 
-      <TouchableOpacity
-        onPress={() => navigate('Menu', {props: this.state})}
-      >
-        <Text style={{ textAlign: 'right', marginRight: 10, paddingTop: 10}}>
-         <Ionicons name="ios-navigate-outline" style={{flex: 1, fontSize: 30, color: 'white', fontWeight: 'bold'}}></Ionicons>  
-        </Text>  
-         </TouchableOpacity>   
+      <View style={{backgroundColor:'black', height: height}}> 
+       <View style={{flex: 1, flexDirection: 'row', marginTop:30, marginBottom:30, alignItems: 'stretch'}}>
+       <View > 
+            <Text style={{ marginLeft: 10, marginBottom: 16, textAlign: 'center',  color: 'white', fontSize: 24, color: 'white', fontWeight: 'bold'}}> RealTime Subways</Text>
+        </View>
+        <View style={{flex: 1, width:40}}>
+          <TouchableOpacity onPress={() => navigate('MainMap')}> 
+             <Text style={{ marginRight: 10, textAlign: 'right'}}>
+               <Ionicons name="ios-navigate-outline" style={{fontSize: 30, color: 'white', fontWeight: 'bold'}}></Ionicons>  
+            </Text>       
+        </TouchableOpacity> 
+        </View>
+        </View> 
+        <View style={{height: 240}}>
       <ScrollView 
-      style={{height: 270,  marginBottom: 6}}
+      
       pagingEnabled={true}>
       <FlatList 
       scrollEventThrottle={1}
@@ -239,7 +246,7 @@ const { navigate } = this.props.navigation;
         renderItem={({item}) => 
           <TouchableOpacity 
             onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0])}      
-            style={{ alignSelf: 'stretch', marginTop: 4, marginBottom: 4, paddingBottom: 5, backgroundColor: item.properties.color}}>
+            style={{ height: 50, alignSelf: 'stretch', marginTop: 4, marginBottom: 4, paddingBottom: 5, backgroundColor: item.properties.color}}>
               <View style={{justifyContent: 'center', borderWidth: 0}} >
                 <Text style={{fontSize: 20, paddingLeft: 5,fontWeight: 'bold', textAlign: "center", paddingTop: 2, paddingBottom: 2}} >{item.properties.stop_name}</Text>
               </View>
@@ -250,6 +257,7 @@ const { navigate } = this.props.navigation;
         keyExtractor={item => item.properties.stop_id}
       />
       </ScrollView>
+      </View>
       <View style={{height: 400, marginTop: 20}}>
       <Schedule stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route}/>
     </View>
@@ -280,15 +288,8 @@ export const frontend = StackNavigator({
   AppB: { 
     screen: AppB,
    },
-   AppC: {
-    screen: AppB,
-   },
-   Menu: {
-    screen: Menu,
+   MainMap: {
+    screen: MainMap,
    }
 });
 AppRegistry.registerComponent('frontend', () => frontend);
-
-
-
-

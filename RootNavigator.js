@@ -1,28 +1,22 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import App from'./App.js';
-import StopdsContB from'./StopdsContB.js';
-import Schedule from'./Schedule.js';
-import Splash from'./Splash.js';
-import GeoWatch from'./GeoWatch.js';
+import AppB from'./B/App.js';
+import Schedule from'./B/Schedule.js';
+import MainMap from'./B/MainMap.js';
+
 
 
 const RootNavigator = StackNavigator({
-  Splash: {
-    screen: Splash
+
+  AppB: {
+    screen: AppB
   },
-  Home: {
-    screen: App
-  },
-  Stops: {
-    screen: StopdsContB
+  MainMap: {
+    screen: 
   },
   Schedule: {
     screen: Schedule
-  },
-  GeoWatch: {
-    screen: GeoWatch
   }
 });
 
