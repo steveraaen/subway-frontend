@@ -7,7 +7,7 @@ import {
   Dimensions, 
   Button,
   FlatList,
-  Modal,
+  Image,
   TouchableOpacity
 } from 'react-native';
 import MapView from 'react-native-maps';
@@ -38,8 +38,10 @@ const styles= StyleSheet.create({
     })
     return (
       <View style={styles.map}> 
-
- </View>
+        <Image 
+        source={require('../NYC_subway-4D.svg')}
+        />
+      </View>
 )
 }
 }

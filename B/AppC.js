@@ -3,10 +3,13 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   AppState,
+  Button,
   Dimensions,
   Platform,
   StyleSheet,
   FlatList,
+  Image,
+  Modal,
   Text,
   View,
   ScrollView,
@@ -19,14 +22,14 @@ import { StackNavigator } from 'react-navigation';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import SplashScreen from 'react-native-splash-screen';
 import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
 import MainMap from './MainMap.js';
   
-class AppB extends Component {
+class AppC extends Component {
     static navigationOptions = {
       header: null,
      headerMode: 'screen',
@@ -41,7 +44,7 @@ class AppB extends Component {
       appState: AppState.currentState,
       uLnglat: null,
       lineColors: lineColors,
-      modalVisible: false,
+      modalVisible: true,
       orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
       devicetype: Rescale.isTablet() ? 'tablet' : 'phone'
     }
@@ -61,7 +64,13 @@ class AppB extends Component {
     console.log(dim)
   }
 // ---------------------------------------------------------
+    openModal() {
+      this.setState({modalVisible:true});
+    }
 
+    closeModal() {
+      this.setState({modalVisible:false});
+    }
   getStops(lng,lat) {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
@@ -237,17 +246,18 @@ componentWillUnmount() {
   
 
   if(this.state.orientation === 'portrait') {
-
+    scrollSize = 240;
     hght = this.state.height;
     wdth = this.state.width;
     flx = "column";
     cmt = 0;
-    cpt = 18;
+    cpt = 22;
     ttxt = 20;
     ta = "center";
     ml = 0;
     schmt = 12;
     scrmt = 12;
+    spt = 0;
  
 
   } else if(this.state.orientation === 'landscape') {
@@ -257,12 +267,13 @@ componentWillUnmount() {
     hght = this.state.height;
     flx = "row";
     cmt = 0;
-    cpt = 18;
+    cpt = 0;
     ttxt = 18;
     ta = "center";
     ml= 30;
     schmt = 12;
     scrmt = 12;
+    spt= 16;
   }
 
   const styles = StyleSheet.create({
@@ -273,14 +284,15 @@ componentWillUnmount() {
       justifyContent: 'flex-start',
       marginTop: cmt,
       paddingTop: cpt,
-      /*backgroundColor:'#222222',*/
+      backgroundColor:'black',
     },
     title: {
-      flex: .12,
-      marginTop: 10,
-      marginBottom: 10,
+      flex: .18,
+      paddingTop: 5,
+      paddingBottom: 5,
+      justifyContent: 'center',
       backgroundColor:'#03003F',
-     /* paddingLeft: ml*/
+
     },
     titleText: {
       color: 'white',
@@ -290,13 +302,21 @@ componentWillUnmount() {
       textAlign: ta,
       backgroundColor:'#03003F',
     },
-    schedTitleText: {
+    schedTitleTextNorth: {
+      color: '#00FDFF',
+      fontSize: 18,
+      fontStyle: 'italic',
+      fontWeight: 'bold',
+      backgroundColor:'#03003F',
+      textAlign: 'center'
+    },
+    schedTitleTextSouth: {
       color: 'pink',
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
-      textAlign: ta,
       backgroundColor:'#03003F',
+      textAlign: 'center'
     },
      chosenTitleText: {
       color: '#03003F',
@@ -306,13 +326,17 @@ componentWillUnmount() {
       textAlign: ta,
     },
     scroll: {
-      flex: .5,
-      paddingBottom: 12,
+      flex: .95,
       backgroundColor:'#03003F',
+
     },
     schedule: {
-      flex: .5,
+      flex: .9,
       backgroundColor:'#03003F',
+      marginTop: 10,
+      paddingTop: spt,
+      flexDirection: 'row',
+      flexWrap: 'wrap'
     },
     stopsText: {
       fontSize:  20,
@@ -329,10 +353,27 @@ componentWillUnmount() {
       marginBottom: 2
     },
     touchOp: {
+      flex: .25,
      backgroundColor:'#03003F',
      borderBottomWidth: 1,
      borderBottomColor: 'gray',
-    },
+    },  
+    imageBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'stretch',
+      height: 80,
+      backgroundColor: '#03003F',
+      marginTop: cpt
+  },  
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'white',
+  },
+  innerContainer: {
+    alignItems: 'center',
+  },
     map: {
     ...StyleSheet.absoluteFillObject,
   }
@@ -341,9 +382,39 @@ componentWillUnmount() {
     return  ( 
       <View style={styles.container}> 
         <StatusBar></StatusBar>
+          <Modal
+              visible={this.state.modalVisible}
+              animationType={'slide'}
+              onRequestClose={() => this.closeModal()}
+          >
+          <View style={styles.imageBar}>
+          <Image  source={require('../assets/nby40x3.png')} />
+          <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
+          </View>
+            <View style={styles.modalContainer}>
+              <View style={styles.innerContainer}>
+
+                       <Text style={styles.welcome}>
+                       <Text>   Nearby Subways is a "one trick pony" app.  When opened it will find all NYC Subway stations within one mile.</Text>
+                          Scroll down on the top section to see more stations. Tap a station to view the schedule.
+                         The lower half of the screen displays the departure times. It defaults to displaying southbound trains, but by swiping left
+                         you will see the northbound schedule.  One further swipe left displays a map plotting your location and the location of the selected stop.
+                      </Text>
+                <Button
+                    onPress={() => this.closeModal()}
+                    title="Close"
+                >
+                </Button>
+              </View>
+            </View>
+          </Modal>
          <View style={styles.scroll}>
-          <View style={styles.title}>
-          <Text style={styles.titleText}>Nearest Subways</Text>
+          <View style={styles.imageBar}>
+          <Image  source={require('../assets/d20x3.png')} />
+          <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
+                    <TouchableOpacity onPress={() => this.openModal()} >        
+        <Text style={{paddingTop: 6}}>  <Icon name="ios-information-circle" size={30} color="white"/></Text>       
+          </TouchableOpacity>
           </View>
      
         <ScrollView 
@@ -354,7 +425,7 @@ componentWillUnmount() {
           data={this.state.data} 
           renderItem={({item}) =>       
             <TouchableOpacity 
-              /*style={styles.touchOp}*/
+              style={styles.touchOp}
               onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0])}      
               >
                 <View style={styles.title} >
@@ -377,8 +448,8 @@ componentWillUnmount() {
 }
 
 export const frontend = StackNavigator({
-  AppB: { 
-    screen: AppB,
+  AppC: { 
+    screen: AppC,
    },
    MainMap: {
     screen: MainMap,

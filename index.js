@@ -1,2 +1,2 @@
 
-import './B/AppB';
+import './B/AppC';

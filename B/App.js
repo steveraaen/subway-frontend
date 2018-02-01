@@ -19,14 +19,13 @@ import { StackNavigator } from 'react-navigation';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import SplashScreen from 'react-native-splash-screen';
 import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
 import MainMap from './MainMap.js';
   
-class AppB extends Component {
+class App extends Component {
     static navigationOptions = {
       header: null,
      headerMode: 'screen',
@@ -237,7 +236,8 @@ componentWillUnmount() {
   
 
   if(this.state.orientation === 'portrait') {
-
+    scrollSize = 290;
+    schedSize = 350;
     hght = this.state.height;
     wdth = this.state.width;
     flx = "column";
@@ -273,65 +273,58 @@ componentWillUnmount() {
       justifyContent: 'flex-start',
       marginTop: cmt,
       paddingTop: cpt,
-      /*backgroundColor:'#222222',*/
+      backgroundColor:'black',
     },
     title: {
-      flex: .12,
       marginTop: 10,
       marginBottom: 10,
-      backgroundColor:'#03003F',
+      width: wdth,
+      backgroundColor:'black',
      /* paddingLeft: ml*/
     },
     titleText: {
       color: 'white',
-      fontSize: 24,
+      fontSize: ttxt,
       fontStyle: 'italic',
       fontWeight: 'bold',
       textAlign: ta,
-      backgroundColor:'#03003F',
-    },
-    schedTitleText: {
-      color: 'pink',
-      fontSize: 18,
-      fontStyle: 'italic',
-      fontWeight: 'bold',
-      textAlign: ta,
-      backgroundColor:'#03003F',
-    },
-     chosenTitleText: {
-      color: '#03003F',
-      fontSize: 18,
-      fontStyle: 'italic',
-      fontWeight: 'bold',
-      textAlign: ta,
+      backgroundColor:'black',
     },
     scroll: {
-      flex: .5,
-      paddingBottom: 12,
-      backgroundColor:'#03003F',
+      height: scrollSize,
+      width: wdth,
+      backgroundColor:'black',
+      marginTop: scrmt,
+
     },
     schedule: {
-      flex: .5,
-      backgroundColor:'#03003F',
+      justifyContent: 'flex-end',
+      marginTop: schmt,
+      height: schedSize,
+      width: wdth,
+      backgroundColor:'black',
     },
     stopsText: {
-      fontSize:  20,
+      fontSize:  22,
       fontWeight: 'bold',
       textAlign: "center",
-      backgroundColor:'#03003F',
+      backgroundColor:'black',
     },
     timeText: {
       fontSize: 17,
       fontWeight: 'bold',
       color: 'white',
       textAlign: "center",
-      backgroundColor:'#03003F',
+      backgroundColor:'black',
       marginBottom: 2
     },
     touchOp: {
-     backgroundColor:'#03003F',
+     height: 60,
+     backgroundColor:'black',
      borderBottomWidth: 1,
      borderBottomColor: 'gray',
+        
+
     },
     map: {
     ...StyleSheet.absoluteFillObject,
@@ -354,7 +347,7 @@ componentWillUnmount() {
           data={this.state.data} 
           renderItem={({item}) =>       
             <TouchableOpacity 
-              /*style={styles.touchOp}*/
+              style={styles.touchOp}
               onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0])}      
               >
                 <View style={styles.title} >
@@ -377,8 +370,8 @@ componentWillUnmount() {
 }
 
 export const frontend = StackNavigator({
-  AppB: { 
-    screen: AppB,
+  App: { 
+    screen: App,
    },
    MainMap: {
     screen: MainMap,
