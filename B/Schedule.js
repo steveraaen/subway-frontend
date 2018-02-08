@@ -33,7 +33,6 @@ componentWillReceiveProps() {
 	 	latitude: this.props.LatLng[1],
 	 	longitude: this.props.LatLng[0]
 	 }
-	 console.log(latlng)
 	 this.setState({
 	 	coordinate: latlng,
 	 	userLocation: {
@@ -46,7 +45,6 @@ componentWillReceiveProps() {
 render() {
     const width = Dimensions.get('window').width;
     const height = Dimensions.get('window').height; 
-    console.log(this.props.orientation)
 
 if(this.props.north || this.props.south) {
 	return ( 
@@ -63,7 +61,7 @@ if(this.props.north || this.props.south) {
 				data={this.props.south}		 
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{ justifyContent: 'center', marginTop: 12, alignSelf: 'center'}}>
+						<View style= {{ justifyContent: 'center', marginTop: 8, alignSelf: 'center'}}>
 							<Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color}}><Text>{item.routeId}			</Text>
 							<Text style= {{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>			{moment.unix(item.departureTime).format("HH:mm")}<Text>			{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}<Text>			minutes</Text></Text></Text></Text>
 						</View>
@@ -75,12 +73,12 @@ if(this.props.north || this.props.south) {
 		<Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text>
 		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
 			<FlatList
-				style={{height:380, marginTop: 10}}
+				style={{height:380, marginTop: 8}}
 				header={"Northbound Trains"}
 				data={this.props.north}		 
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{ justifyContent: 'center', marginTop: 12, alignSelf: 'center'}}>
+						<View style= {{ justifyContent: 'center', marginTop: 8, alignSelf: 'center'}}>
 							<Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color}}><Text>{item.routeId}			</Text>
 							<Text style= {{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>			{moment.unix(item.departureTime).format("HH:mm")}<Text>			{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}<Text>			minutes</Text></Text></Text></Text>
 						</View>

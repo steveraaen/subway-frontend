@@ -14,6 +14,7 @@ import {
   View,
   ScrollView,
   StatusBar,
+  TextInput,
   TouchableOpacity
 } from 'react-native';
 import Rescale
@@ -24,10 +25,12 @@ import TimerMixin from 'react-timer-mixin'
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import SplashScreen from 'react-native-splash-screen';
+import Swiper from 'react-native-swiper';
 import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
-import MainMap from './MainMap.js';
+import ChooseLoc from './ChooseLoc.js';
+
   
 class AppC extends Component {
     static navigationOptions = {
@@ -44,9 +47,13 @@ class AppC extends Component {
       appState: AppState.currentState,
       uLnglat: null,
       lineColors: lineColors,
-      modalVisible: true,
+      modalVisible: false,
       orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
-      devicetype: Rescale.isTablet() ? 'tablet' : 'phone'
+      devicetype: Rescale.isTablet() ? 'tablet' : 'phone',
+      boros: ["Brooklyn, NY", "Bronx, NY", "Queens, NY", "New York, NY", "Manhattan, NY", "Staten Island, NY"],
+      inNYC: false,
+   /*   placeName: 'Rockefeller',*/
+
     }
     Dimensions.addEventListener('change', () => {
         this.setState({
@@ -58,10 +65,11 @@ class AppC extends Component {
     this.getStops = this.getStops.bind(this)
     this.getSchedule = this.getSchedule.bind(this)
     this.freshSched = this.freshSched.bind(this)
+    this.geocode = this.geocode.bind(this)
+    this.revGeocode = this.revGeocode.bind(this)
     mixins: [TimerMixin]
-    console.log(this.state.appState)
     const dim = Dimensions.get('screen');
-    console.log(dim)
+    
   }
 // ---------------------------------------------------------
     openModal() {
@@ -71,7 +79,7 @@ class AppC extends Component {
     closeModal() {
       this.setState({modalVisible:false});
     }
-  getStops(lng,lat) {
+    getStops(lng,lat) {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
             params: {
@@ -125,26 +133,20 @@ getSchedule(id, line) {
       }).catch(function(error) {
         console.log('problem with getSchedule')
   throw error;
-    });
-    
+    });   
   }
  freshSched(p) {
   var schedObj = this.state.schedule;
-
   for(let trn in schedObj) {
-
   var north = schedObj[trn].N
   var south = schedObj[trn].S
   
-
   function clean(arr) {
   return arr.timeDif > 0
   }
-
   for(let n in north) {
     var nameId = north[n].routeId
-    var routeId = Object.keys(schedObj)
-  
+    var routeId = Object.keys(schedObj)  
     for(let lc in lineColors){
       if(lineColors[lc].routeArray.includes(nameId)) {       
         north[n].color = lineColors[lc].color
@@ -174,10 +176,47 @@ getSchedule(id, line) {
         south: cleanSouth,
         timeStamp: Math.round((new Date()).getTime() / 1000)
         })
- }
-// ----------------------------------------------------
-    componentWillMount() {
+ } /*${this.state.latitude, this.state.longitude}40.758740,-73.978674*/
+    revGeocode(lat, lng) {
       
+    var lat= parseFloat(this.state.uLatitude).toFixed(6); 
+      var lng= parseFloat(this.state.uLatitude).toFixed(6) ;
+     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.uLatitude).toFixed(6) +',' + parseFloat(this.state.uLongitude).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+
+        }).then((doc) => {
+          for(let i =0; i < this.state.boros.length; i++) {
+            if(doc.data.results[0].formatted_address.includes(this.state.boros[i])) {
+              this.setState({
+                inNYC: true,
+                curBoro: this.state.boros[i]
+              })
+            }            
+          }
+          this.setState({
+            address:  doc.data.results[0].formatted_address
+          })
+        }).catch(function(error) {
+       throw error
+    }); 
+  }
+
+    
+
+    geocode(place) {
+     return axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' + place + '&location=40.704745,-73.920052&radius=50000&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+        }).then((resp) => {
+          this.setState({
+            autoResp: resp
+          })
+          console.log(resp)
+        }).catch(function(error) {
+       throw error
+    }); 
+  }
+
+// ----------------------------------------------------
+    componentWillMount() { 
+         
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -194,7 +233,8 @@ getSchedule(id, line) {
           uPosition: position.coords,
          error: null,
         }, () => {
-          this.getStops(this.state.longitude, this.state.latitude)
+          this.getStops(this.state.longitude,this.state.latitude)
+          this.revGeocode(this.state.uLatitude,this.state.uLongitude)
         });
        
       },
@@ -209,12 +249,19 @@ getSchedule(id, line) {
         north: this.state.north,
         south: this.state.south
         })    
-      }, 30000)    
+      }, 30000)   
+
     }
 // ----------------------------------------------------
-
+  
   componentDidMount() {
+
       SplashScreen.hide();
+
+
+  }
+  componentWillUpdate() {
+
   }
 componentWillUnmount() {
   clearInterval(this.intA);
@@ -234,31 +281,37 @@ componentWillUnmount() {
     })
 }
 
+
+  
 // ------------------------------------------------
   render() {
+
+         if(this.state.inNYC === false) {
+        var index= 1
+      }
+      else {
+        var index= 0
+      }
+  
+    
+
     StatusBar.setHidden('hidden': false)
     StatusBar.setBarStyle("dark-content")
   const { navigate } = this.props.navigation;
-
-  console.log(this.state.orientation)
-  console.log(this.state.width)
-  console.log(this.state.height)
-  
 
   if(this.state.orientation === 'portrait') {
     scrollSize = 240;
     hght = this.state.height;
     wdth = this.state.width;
     flx = "column";
-    cmt = 0;
-    cpt = 22;
+    cmt = 24;
+    cpt = 4;
     ttxt = 20;
     ta = "center";
     ml = 0;
-    schmt = 12;
+    schmt = 0;
     scrmt = 12;
     spt = 0;
- 
 
   } else if(this.state.orientation === 'landscape') {
     scrollSize = 240;
@@ -266,14 +319,14 @@ componentWillUnmount() {
     wdth = this.state.width * .5;
     hght = this.state.height;
     flx = "row";
-    cmt = 0;
+    cmt = 24;
     cpt = 0;
     ttxt = 18;
     ta = "center";
     ml= 30;
-    schmt = 12;
+    schmt = 26;
     scrmt = 12;
-    spt= 16;
+    spt= 32;
   }
 
   const styles = StyleSheet.create({
@@ -303,6 +356,7 @@ componentWillUnmount() {
       backgroundColor:'#03003F',
     },
     schedTitleTextNorth: {
+      marginTop: schmt,
       color: '#00FDFF',
       fontSize: 18,
       fontStyle: 'italic',
@@ -311,6 +365,7 @@ componentWillUnmount() {
       textAlign: 'center'
     },
     schedTitleTextSouth: {
+      marginTop: schmt,
       color: 'pink',
       fontSize: 18,
       fontStyle: 'italic',
@@ -326,7 +381,7 @@ componentWillUnmount() {
       textAlign: ta,
     },
     scroll: {
-      flex: .95,
+      flex: .86,
       backgroundColor:'#03003F',
 
     },
@@ -334,6 +389,7 @@ componentWillUnmount() {
       flex: .9,
       backgroundColor:'#03003F',
       marginTop: 10,
+      height: 300,
       paddingTop: spt,
       flexDirection: 'row',
       flexWrap: 'wrap'
@@ -354,26 +410,47 @@ componentWillUnmount() {
     },
     touchOp: {
       flex: .25,
-     backgroundColor:'#03003F',
-     borderBottomWidth: 1,
-     borderBottomColor: 'gray',
+      backgroundColor:'#03003F',
+      borderBottomWidth: 1,
+      borderBottomColor: 'gray',
     },  
     imageBar: {
       flexDirection: 'row',
+      flexGrow: 1,
       justifyContent: 'space-around',
       alignItems: 'stretch',
-      height: 80,
+      height: 44,
       backgroundColor: '#03003F',
       marginTop: cpt
   },  
-  modalContainer: {
+    modalContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     backgroundColor: 'white',
   },
-  innerContainer: {
+    innerContainer: {
     alignItems: 'center',
+    padding: 10
   },
+    plainText: {
+    paddingLeft:12,
+    paddingRight:12,
+    paddingTop: 6,
+    color: 'white'
+  },
+    plainButton: {
+    alignSelf: 'flex-end',
+    justifyContent: 'center',
+    backgroundColor: '#00933C',
+    width: 46,
+    height: 30,
+    borderRadius: 10,
+  },
+    autoPlaces: {
+      flex: 1,
+      flexDirection: 'column',
+      flexGrow: 1,
+    },
     map: {
     ...StyleSheet.absoluteFillObject,
   }
@@ -381,42 +458,72 @@ componentWillUnmount() {
 
     return  ( 
       <View style={styles.container}> 
-        <StatusBar></StatusBar>
+     
           <Modal
               visible={this.state.modalVisible}
               animationType={'slide'}
               onRequestClose={() => this.closeModal()}
           >
           <View style={styles.imageBar}>
-          <Image  source={require('../assets/nby40x3.png')} />
+          <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
           </View>
-            <View style={styles.modalContainer}>
-              <View style={styles.innerContainer}>
 
-                       <Text style={styles.welcome}>
-                       <Text>   Nearby Subways is a "one trick pony" app.  When opened it will find all NYC Subway stations within one mile.</Text>
-                          Scroll down on the top section to see more stations. Tap a station to view the schedule.
-                         The lower half of the screen displays the departure times. It defaults to displaying southbound trains, but by swiping left
-                         you will see the northbound schedule.  One further swipe left displays a map plotting your location and the location of the selected stop.
-                      </Text>
+            <View style={styles.modalContainer}>
+            <View style={styles.scroll}>
+              <View style={styles.innerContainer}> 
                 <Button
                     onPress={() => this.closeModal()}
                     title="Close"
                 >
-                </Button>
+                </Button>             
+                  <Text style={styles.timeText}>
+                     Nearest Subways should work well for you in {this.state.curBoro}.
+                  </Text>
+                </View>
+              <View >
+                  <Text style={styles.plainText}>
+                      This app tries to do one thing - navigate the New York City subway system from your current location.
+                  </Text>
+                  <Text style={styles.plainText}>
+                       Scroll down on the top section to see more stations. Tap a station to view the schedule.
+                       The lower half of the screen displays the departure times. It defaults to displaying southbound trains, but by swiping left
+                       you will see the northbound schedule.  One further swipe left displays a map plotting your location and the location of the selected stop.
+                   </Text>
+            </View>
               </View>
             </View>
           </Modal>
          <View style={styles.scroll}>
+         <View style={{height: 50}}>
+         <Swiper
+            loop={false}
+            index={index}
+            loadMinimal={true}
+            showsPagination={false}
+            style={{height: 44}}>
           <View style={styles.imageBar}>
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
-                    <TouchableOpacity onPress={() => this.openModal()} >        
-        <Text style={{paddingTop: 6}}>  <Icon name="ios-information-circle" size={30} color="white"/></Text>       
+         <TouchableOpacity onPress={() => this.openModal()} >        
+        <Text style={{paddingTop: 6}}>  <Icon name="ios-information-circle" size={20} color="white"/></Text>       
           </TouchableOpacity>
           </View>
-     
+             <View style={styles.imageBar}>
+               <TextInput  
+                  autoCorrect={false}
+                  value={this.state.input}
+                  style={{height: 30, borderColor: 'gray', borderWidth: 1, width: 220, backgroundColor: 'white'}}
+                  onChangeText={(text) => this.setState({input: text}, (text) => {this.geocode(this.state.input)})}                 
+                /> 
+                <TouchableOpacity>
+                  <View style={styles.plainButton}>
+                    <Text style={{textAlign: 'center', color: 'black',fontSize:16, fontWeight: 'bold'}}>Find</Text>
+                  </View>
+                </TouchableOpacity>       
+          </View>
+        </Swiper>
+     </View>
         <ScrollView 
         
         pagingEnabled={true}>
@@ -440,6 +547,7 @@ componentWillUnmount() {
         <View style={styles.schedule}>
         <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width}/>
       </View>
+     
     </View>
  
     )
@@ -450,9 +558,6 @@ componentWillUnmount() {
 export const frontend = StackNavigator({
   AppC: { 
     screen: AppC,
-   },
-   MainMap: {
-    screen: MainMap,
    }
 });
 AppRegistry.registerComponent('frontend', () => frontend);

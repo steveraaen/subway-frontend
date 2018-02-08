@@ -261,7 +261,7 @@ componentWillUnmount() {
     ttxt = 18;
     ta = "center";
     ml= 30;
-    schmt = 12;
+    schmt = 48;
     scrmt = 12;
   }
 
@@ -291,6 +291,7 @@ componentWillUnmount() {
       backgroundColor:'#03003F',
     },
     schedTitleText: {
+      marginTop: schmt,
       color: 'pink',
       fontSize: 18,
       fontStyle: 'italic',

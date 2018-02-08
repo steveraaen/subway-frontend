@@ -171,17 +171,17 @@ getSchedule(id, line) {
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
-                uPosition: pos.coords
+                uLongitude: /*pos.coords.longitude,*/-73.978674,
+                uLatitude:/* pos.coords.latitude,*/ 40.758740,
+                uLnglat: /*[pos.coords.longitude, pos.coords.latitude],*/[-73.978674, 40.758740],
+                uPosition: /*pos.coords*/ [-73.978674, 40.758740],
             })
       this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         this.setState({
-          uLatitude: position.coords.latitude,
-          uLongitude: position.coords.longitude,
-          uPosition: position.coords,
+          uLatitude: /*position.coords.latitude,*/40.758740,
+          uLongitude: /*position.coords.longitude,*/-73.978674,
+          uPosition: /*position.coords,*/[-73.978674, 40.758740],
          error: null,
         }, () => {
           this.getStops(this.state.longitude, this.state.latitude)
