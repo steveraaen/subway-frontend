@@ -14,10 +14,10 @@ import TimerMixin from 'react-timer-mixin'
 import Swiper from 'react-native-swiper';
 import axios from 'axios';
 import moment from'moment';
-import MapView from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import lineColors from'../colors.js';
 import FadeInView from'./Animations.js';
-
+import nice from '../niceMap.js';
 export default class Schedule extends Component {
 constructor(props) {
 	super(props);
@@ -50,37 +50,41 @@ if(this.props.north || this.props.south) {
 	return ( 
 		<Swiper
 		loop={false}
-		index={0}
+		
 		>
-		<View >
-		<Text style={this.props.styles.schedTitleTextSouth}>Southbound</Text>
-		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
-			<FlatList
-				style={{height:380, marginTop: 10}}
-				header={"Northbound Trains"}
-				data={this.props.south}		 
-				renderItem={({item}) => 
-					<FadeInView>
-						<View style= {{ justifyContent: 'center', marginTop: 8, alignSelf: 'center'}}>
-							<Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color}}><Text>{item.routeId}			</Text>
-							<Text style= {{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>			{moment.unix(item.departureTime).format("HH:mm")}<Text>			{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}<Text>			minutes</Text></Text></Text></Text>
-						</View>
-					</FadeInView>}
-				 keyExtractor={item => item.departureTime}
-			/>			 
-			</View>
-		<View >
-		<Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text>
+		<View style={this.props.styles.mapContainer}>
+		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text></View>
 		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
 			<FlatList
 				style={{height:380, marginTop: 8}}
 				header={"Northbound Trains"}
-				data={this.props.north}		 
+				data={this.props.north}
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{ justifyContent: 'center', marginTop: 8, alignSelf: 'center'}}>
-							<Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color}}><Text>{item.routeId}			</Text>
-							<Text style= {{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>			{moment.unix(item.departureTime).format("HH:mm")}<Text>			{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}<Text>			minutes</Text></Text></Text></Text>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8, marginLeft: 34}}>
+							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
+							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
+							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
+							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
+						</View>
+					</FadeInView>}
+				 keyExtractor={item => item.departureTime}
+			/>			 
+			</View>
+		<View style={this.props.styles.mapContainer}>
+		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextSouth}>Southbound</Text></View>
+		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
+			<FlatList
+				style={{height:380, marginTop: 8}}
+				header={"Southbound Trains"}
+				data={this.props.south}
+				renderItem={({item}) => 
+					<FadeInView>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8, marginLeft: 34}}>
+							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
+							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
+							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
+							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
 						</View>
 					</FadeInView>}
 				 keyExtractor={item => item.departureTime}
@@ -88,16 +92,19 @@ if(this.props.north || this.props.south) {
 			</View>
 
 
-<View style={this.props.styles.map}>	
+
+<View style={this.props.styles.mapContainer}>	
       <MapView
+      scrollEnabled={false}  
+      	zoomEnabled={false}   
+      	rotateEnabled={false}   
+      	scrollEnabled={false}   
+      	pitchEnabled={false}   
       	style={this.props.styles.map}
-      	zoomEnabled={true}
-			rotateEnabled={false}
-			scrollEnabled={false}
+      	customMapStyle={nice}
 			showsUserLocation={true}
 			followsUserLocation={true}
-			fitToElements={true}
-			mapType={"hybrid"}
+			provider={PROVIDER_GOOGLE}
 	   	region={{
 	      latitude: this.props.lat,
 	      longitude: this.props.lng,
@@ -117,7 +124,7 @@ if(this.props.north || this.props.south) {
 	
 		)
 		} else return (
-			<View><Text>Waiting</Text></View>
+			<View style={{justifyContent: 'center', paddingLeft: 30}}><Text style={{color: "#FF6319", fontSize: 20, textAlign: 'center'}}>Waiting for data from the MTA</Text></View>
 			)	
 		}
 	}

@@ -4,7 +4,7 @@
 /*mongoimport -h ds163745.mlab.com:63745 -d heroku_tm8f0g3q -c transfers -u steve -p modernwater360 --file transfers.csv --type csv --headerline*/
 var lineColors = {
   ace: {
-    color: "#0039A6", 
+    color: "#4D96FF", 
     routeArray: ["A", "C", "E"]
   },
   bdfm: {
@@ -37,11 +37,11 @@ var lineColors = {
   },
   l: {
     color: "#A7A9AC",
-     routeArray: ["L"]
+     routeArray: ["L", "9"]
   },
   seven: {
-    color: "#A7A9AC",
-     routeArray: ["L"]
+    color: "#B933AD",
+     routeArray: ["7"]
   }
   }
   export default lineColors

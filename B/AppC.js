@@ -1,6 +1,7 @@
 /*bwgv-ekpr-tnpf-rbfj*/
 import React, { Component } from 'react';
 import {
+  AlertIos,
   AppRegistry,
   AppState,
   Button,
@@ -29,8 +30,7 @@ import Swiper from 'react-native-swiper';
 import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
-import ChooseLoc from './ChooseLoc.js';
-
+/*import GooglePlacesInput from './AutoComplete.js'*/
   
 class AppC extends Component {
     static navigationOptions = {
@@ -65,13 +65,17 @@ class AppC extends Component {
     this.getStops = this.getStops.bind(this)
     this.getSchedule = this.getSchedule.bind(this)
     this.freshSched = this.freshSched.bind(this)
-    this.geocode = this.geocode.bind(this)
+    this.getPlaces = this.getPlaces.bind(this)
     this.revGeocode = this.revGeocode.bind(this)
+    this.autoC = this.autoC.bind(this)
+    this.handlePlacePress = this.handlePlacePress.bind(this)
+ /*   this.openSearchModal = this.openSearchModal.bind(this)*/
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
     
   }
 // ---------------------------------------------------------
+
     openModal() {
       this.setState({modalVisible:true});
     }
@@ -118,24 +122,34 @@ class AppC extends Component {
 } 
 // -----------------------------------------------------
 getSchedule(id, line) { 
+  console.log(this.state.feed)
+  console.log(this.state.id)
+
     return axios.get('https://subs-backend.herokuapp.com/api/train/', { 
       params: {
         id: this.state.id,
         feed: this.state.feed
         }
     }).then((responseData) => { 
+      if(responseData) {
     this.setState({
       loading: false,
       schedule: responseData.data.schedule
       }, () => {
+        console.log(responseData.data.schedule)
         this.freshSched(this.state.schedule)
       })       
-      }).catch(function(error) {
+     } }).catch(function(error) { 
+      this.setState({
+        noDataMessage: `Schedule for ${this.state.name} is not currently avalable`
+      })
         console.log('problem with getSchedule')
   throw error;
     });   
   }
- freshSched(p) {
+ freshSched() {
+  console.log(this.state.schedule)
+if(this.state.schedule) {
   var schedObj = this.state.schedule;
   for(let trn in schedObj) {
   var north = schedObj[trn].N
@@ -156,7 +170,7 @@ getSchedule(id, line) {
     north[n].timeDif = north[n].departureTime - north[n].timeStamp
     } 
     var cleanNorth = north.filter(clean).slice(0, 4)
-  
+  console.log(cleanNorth)
   for(let s in south) {
     var sId = south[s].routeId    
     for(let lc in lineColors){
@@ -176,7 +190,16 @@ getSchedule(id, line) {
         south: cleanSouth,
         timeStamp: Math.round((new Date()).getTime() / 1000)
         })
- } /*${this.state.latitude, this.state.longitude}40.758740,-73.978674*/
+  console.log(this.state.north)
+} else {
+  this.setState({
+    north: null,
+    south: null
+  })
+   console.log(this.state.north)
+}
+  clearInterval(this.intA);
+ } 
     revGeocode(lat, lng) {
       
     var lat= parseFloat(this.state.uLatitude).toFixed(6); 
@@ -186,6 +209,7 @@ getSchedule(id, line) {
         }).then((doc) => {
           for(let i =0; i < this.state.boros.length; i++) {
             if(doc.data.results[0].formatted_address.includes(this.state.boros[i])) {
+              console.log(doc.data.results)
               this.setState({
                 inNYC: true,
                 curBoro: this.state.boros[i]
@@ -193,20 +217,19 @@ getSchedule(id, line) {
             }            
           }
           this.setState({
-            address:  doc.data.results[0].formatted_address
+            address:  doc.data.results[0].formatted_address,
+            latitude: doc.data.results[0].geometry.location[1],
+            longitude: doc.data.results[0].geometry.location[0]
           })
         }).catch(function(error) {
        throw error
     }); 
   }
-
-    
-
-    geocode(place) {
-     return axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' + place + '&location=40.704745,-73.920052&radius=50000&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+    getPlaces(place) {
+     return axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' + place + '&radius=50000&minLength=2&administrative_area_level_1=NewYork&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((resp) => {
           this.setState({
-            autoResp: resp
+            autoResp: resp.data.predictions
           })
           console.log(resp)
         }).catch(function(error) {
@@ -235,8 +258,7 @@ getSchedule(id, line) {
         }, () => {
           this.getStops(this.state.longitude,this.state.latitude)
           this.revGeocode(this.state.uLatitude,this.state.uLongitude)
-        });
-       
+        });      
       },
       (error) => this.setState({ error: error.message }),
       { enableHighAccuracy: true,  distanceFilter: 20 },
@@ -250,20 +272,51 @@ getSchedule(id, line) {
         south: this.state.south
         })    
       }, 30000)   
-
     }
+    handlePlacePress(id) {
+      console.log(id)
+      return axios.get('https://maps.googleapis.com/maps/api/place/details/json?placeid='+id+'&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+    /*  return axios.get('https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {*/
+      }).then((respon) => {
+        this.setState({
+          details: respon,
+          uLatitude: respon.data.result.geometry.location.lat,
+          uLongitude: respon.data.result.geometry.location.lng,
+          address: respon.data.result.formatted_address,
+          modalVisible: false
+
+        }, () => {
+          this.getStops()
+        })
+      })
+      clearInterval(this.intA);
+    }
+  autoC(inp) {
+    if(this.state.autoResp) {
+      console.log(Array.isArray(inp))
+    return (
+        <FlatList 
+          scrollEventThrottle={1}       
+          data={inp} 
+          renderItem={({item}) =>       
+            <TouchableOpacity 
+              style={{height: 30}}
+              onPress={() => this.handlePlacePress(item.place_id)}      
+              >
+                <View style={{ height: 40}} >
+                   <Text numberOfLines={1}style={{fontSize: 16,fontWeight: 'bold', color: 'white'}} >{item.description}</Text>
+                </View>
+            </TouchableOpacity>}
+          keyExtractor={item => item.id}
+        />
+      )
+    }
+  }
 // ----------------------------------------------------
-  
   componentDidMount() {
-
-      SplashScreen.hide();
-
-
+     /*  SplashScreen.hide();*/
   }
-  componentWillUpdate() {
-
-  }
-componentWillUnmount() {
+  componentWillUnmount() {
   clearInterval(this.intA);
   Dimensions.removeEventListener("change", this.handler);
   }
@@ -277,24 +330,18 @@ componentWillUnmount() {
       distance: distance,
       route: route
     }, () => {
-      this.getSchedule(this.state.id, this.state.feed)
+      this.getSchedule(this.state.id)
     })
 }
-
-
-  
 // ------------------------------------------------
   render() {
 
-         if(this.state.inNYC === false) {
+    if(this.state.inNYC === false) {
         var index= 1
       }
       else {
         var index= 0
       }
-  
-    
-
     StatusBar.setHidden('hidden': false)
     StatusBar.setBarStyle("dark-content")
   const { navigate } = this.props.navigation;
@@ -312,7 +359,6 @@ componentWillUnmount() {
     schmt = 0;
     scrmt = 12;
     spt = 0;
-
   } else if(this.state.orientation === 'landscape') {
     scrollSize = 240;
     schedSize = this.state.height;
@@ -328,11 +374,11 @@ componentWillUnmount() {
     scrmt = 12;
     spt= 32;
   }
-
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       width: this.state.width,
+      height: this.state.height,
       flexDirection: flx,
       justifyContent: 'flex-start',
       marginTop: cmt,
@@ -357,21 +403,23 @@ componentWillUnmount() {
     },
     schedTitleTextNorth: {
       marginTop: schmt,
-      color: '#00FDFF',
+      color: '#C0C0C0',
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
       backgroundColor:'#03003F',
-      textAlign: 'center'
+      textAlign: 'left',
+      paddingLeft: 14
     },
     schedTitleTextSouth: {
       marginTop: schmt,
-      color: 'pink',
+      color: '#C0C0C0',
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
       backgroundColor:'#03003F',
-      textAlign: 'center'
+      textAlign: 'right',
+      paddingRight: 14
     },
      chosenTitleText: {
       color: '#03003F',
@@ -381,21 +429,24 @@ componentWillUnmount() {
       textAlign: ta,
     },
     scroll: {
-      flex: .86,
+      flex: 1,
+      paddingTop: 2,
       backgroundColor:'#03003F',
-
+    },
+    modalForm: {
+      flex: 1,
+      backgroundColor:'#03003F',
     },
     schedule: {
-      flex: .9,
+      flex: 1,
       backgroundColor:'#03003F',
       marginTop: 10,
-      height: 300,
       paddingTop: spt,
       flexDirection: 'row',
       flexWrap: 'wrap'
     },
     stopsText: {
-      fontSize:  20,
+      fontSize:  18,
       fontWeight: 'bold',
       textAlign: "center",
       backgroundColor:'#03003F',
@@ -416,49 +467,47 @@ componentWillUnmount() {
     },  
     imageBar: {
       flexDirection: 'row',
-      flexGrow: 1,
       justifyContent: 'space-around',
       alignItems: 'stretch',
-      height: 44,
       backgroundColor: '#03003F',
       marginTop: cpt
   },  
     modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    backgroundColor: 'white',
+      flex: 1,
+      justifyContent: 'flex-start',
+      backgroundColor: 'white',
   },
     innerContainer: {
-    alignItems: 'center',
-    padding: 10
+      alignItems: 'center',
+      padding: 10
   },
     plainText: {
-    paddingLeft:12,
-    paddingRight:12,
-    paddingTop: 6,
-    color: 'white'
-  },
-    plainButton: {
-    alignSelf: 'flex-end',
-    justifyContent: 'center',
-    backgroundColor: '#00933C',
-    width: 46,
-    height: 30,
-    borderRadius: 10,
+      paddingLeft:12,
+      paddingRight:12,
+      paddingTop: 6,
+      color: 'yellow',
+      fontSize:16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      paddingBottom: 6,
+      color: '#C0C0C0'
   },
     autoPlaces: {
-      flex: 1,
-      flexDirection: 'column',
-      flexGrow: 1,
+height: 140,
+width: this.state.width
     },
+    mapContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      
+  },
     map: {
     ...StyleSheet.absoluteFillObject,
   }
   });
 
     return  ( 
-      <View style={styles.container}> 
-     
+      <View style={styles.container}>     
           <Modal
               visible={this.state.modalVisible}
               animationType={'slide'}
@@ -468,9 +517,22 @@ componentWillUnmount() {
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
           </View>
-
             <View style={styles.modalContainer}>
-            <View style={styles.scroll}>
+            <View style={styles.modalForm}>
+
+          <View >          
+             <View style={styles.imageBar}>
+               <TextInput  
+                  autoCorrect={false}
+                  value={this.state.input}
+                  style={{height: 30, borderColor: 'gray', borderWidth: 1, width: 220, backgroundColor: 'white'}}          
+                  onChangeText={(text) => this.setState({input: text}, (text) => {this.getPlaces(this.state.input)})}                 
+                />                                   
+          </View>
+          <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}</View>
+          </View>
+
+
               <View style={styles.innerContainer}> 
                 <Button
                     onPress={() => this.closeModal()}
@@ -495,10 +557,11 @@ componentWillUnmount() {
             </View>
           </Modal>
          <View style={styles.scroll}>
-         <View style={{height: 50}}>
+          <Text numberOfLines={1} style={styles.plainText}>{this.state.address}</Text>
+         <View style={{height: 70}}>
          <Swiper
             loop={false}
-            index={index}
+            index={0}
             loadMinimal={true}
             showsPagination={false}
             style={{height: 44}}>
@@ -509,26 +572,13 @@ componentWillUnmount() {
         <Text style={{paddingTop: 6}}>  <Icon name="ios-information-circle" size={20} color="white"/></Text>       
           </TouchableOpacity>
           </View>
-             <View style={styles.imageBar}>
-               <TextInput  
-                  autoCorrect={false}
-                  value={this.state.input}
-                  style={{height: 30, borderColor: 'gray', borderWidth: 1, width: 220, backgroundColor: 'white'}}
-                  onChangeText={(text) => this.setState({input: text}, (text) => {this.geocode(this.state.input)})}                 
-                /> 
-                <TouchableOpacity>
-                  <View style={styles.plainButton}>
-                    <Text style={{textAlign: 'center', color: 'black',fontSize:16, fontWeight: 'bold'}}>Find</Text>
-                  </View>
-                </TouchableOpacity>       
-          </View>
+
         </Swiper>
      </View>
-        <ScrollView 
-        
+        <ScrollView       
         pagingEnabled={true}>
         <FlatList 
-        scrollEventThrottle={1}       
+          scrollEventThrottle={1}       
           data={this.state.data} 
           renderItem={({item}) =>       
             <TouchableOpacity 
@@ -555,9 +605,9 @@ componentWillUnmount() {
   }
 }
 
-export const frontend = StackNavigator({
+export const nearby = StackNavigator({
   AppC: { 
     screen: AppC,
    }
 });
-AppRegistry.registerComponent('frontend', () => frontend);
+AppRegistry.registerComponent('nearby', () => nearby);
