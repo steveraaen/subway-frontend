@@ -70,13 +70,21 @@ class AppC extends Component {
     this.autoC = this.autoC.bind(this)
     this.handlePlacePress = this.handlePlacePress.bind(this)
     this.getDirections = this.getDirections.bind(this)
+    this._handleAppStateChange = this._handleAppStateChange.bind(this)
+    this.getTransfers = this.getTransfers.bind(this)
+    this.mergeStopsTransfers = this.mergeStopsTransfers.bind(this)
  /*   this.openSearchModal = this.openSearchModal.bind(this)*/
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
     
   }
 // ---------------------------------------------------------
-
+  _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      console.log('App has come to the foreground!')
+    }
+    this.setState({appState: nextAppState});
+  }
     openModal() {
       this.setState({modalVisible:true});
     }
@@ -127,6 +135,7 @@ getSchedule(id, line) {
   console.log(this.state.id)
 
     return axios.get('https://subs-backend.herokuapp.com/api/train/', { 
+    /*return axios.get('http://127.0.0.1:5000/api/train/', {*/ 
       params: {
         id: this.state.id,
         feed: this.state.feed
@@ -248,7 +257,28 @@ if(this.state.schedule) {
        throw error
     }); 
   }
+  getTransfers(route) {
+    /*return axios.get('http://127.0.0.1:5000/api/xfer/', {*/ 
+    return axios.get('https://subs-backend.herokuapp.com/api/xfer/', { 
+      
+      params: {
+        route: this.state.route,
+        
+        }
+    }).then((resp) => {
 
+      this.setState({
+        transfers: resp
+      }, () => {
+        this.mergeStopsTransfers(this.state.transfers)
+      })
+    })
+  }
+  mergeStopsTransfers(tfrs) {
+   
+      console.log(tfrs)
+    
+  }
 // ----------------------------------------------------
     componentWillMount() { 
          
@@ -330,13 +360,16 @@ if(this.state.schedule) {
   }
 // ----------------------------------------------------
   componentDidMount() {
+    AppState.addEventListener('change', this._handleAppStateChange);  
      /*  SplashScreen.hide();*/
   }
   componentWillUnmount() {
   clearInterval(this.intA);
+
   Dimensions.removeEventListener("change", this.handler);
+  AppState.removeEventListener('change', this._handleAppStateChange);
   }
-  handlePress(id, feed, name, coordinates, color, distance, route) {
+  handlePress(id, feed, name, coordinates, color, distance, route, transfers) {
      this.setState({
       id: id,
       feed: feed,
@@ -347,11 +380,11 @@ if(this.state.schedule) {
       route: route
     }, () => {
       this.getSchedule(this.state.id)
+      this.getTransfers(this.state.route)
     })
 }
 // ------------------------------------------------
   render() {
-
     if(this.state.inNYC === false) {
         var index= 1
       }
@@ -599,7 +632,7 @@ width: this.state.width
           renderItem={({item}) =>       
             <TouchableOpacity 
               style={styles.touchOp}
-              onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0])}      
+              onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0], item.transfers)}      
               >
                 <View style={styles.title} >
                   <Text style={styles.stopsText}><Text style={{color: item.properties.color}}>{item.properties.stop_name}</Text></Text>

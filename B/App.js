@@ -37,7 +37,6 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      appState: AppState.currentState,
       uLnglat: null,
       lineColors: lineColors,
       modalVisible: false,
@@ -167,7 +166,9 @@ getSchedule(id, line) {
  }
 // ----------------------------------------------------
     componentWillMount() {
-      
+        this.setState({
+          appState: AppState.currentState
+        })
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -205,9 +206,10 @@ getSchedule(id, line) {
 
   componentDidMount() {
       SplashScreen.hide();
-  }
+
 componentWillUnmount() {
   clearInterval(this.intA);
+  
   Dimensions.removeEventListener("change", this.handler);
   }
   handlePress(id, feed, name, coordinates, color, distance, route) {
