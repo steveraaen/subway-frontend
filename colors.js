@@ -33,7 +33,7 @@ var lineColors = {
   },
   fourFiveSix: {
     color: "#00933C", 
-    routeArray: ["4", "5", "6", "5X"]
+    routeArray: ["4", "5", "6", "5X", "6X"]
   },
   l: {
     color: "#A7A9AC",

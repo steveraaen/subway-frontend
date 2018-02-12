@@ -69,6 +69,7 @@ class AppC extends Component {
     this.revGeocode = this.revGeocode.bind(this)
     this.autoC = this.autoC.bind(this)
     this.handlePlacePress = this.handlePlacePress.bind(this)
+    this.getDirections = this.getDirections.bind(this)
  /*   this.openSearchModal = this.openSearchModal.bind(this)*/
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
@@ -199,7 +200,17 @@ if(this.state.schedule) {
    console.log(this.state.north)
 }
   clearInterval(this.intA);
- } 
+ }  
+ getDirections() {
+  return axios.get('https://maps.googleapis.com/maps/api/directions/json?origin=place_id:ChIJyev6ia1bwokRXgmtESUdllI&destination=place_id:ChIJIYJS7qxZwokRNj43jDKKNCc&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+
+  }).then((docs) => {
+    console.log(docs)
+    this.setState({
+      directions: docs
+    })
+  })
+ }
     revGeocode(lat, lng) {
       
     var lat= parseFloat(this.state.uLatitude).toFixed(6); 
@@ -212,7 +223,8 @@ if(this.state.schedule) {
               console.log(doc.data.results)
               this.setState({
                 inNYC: true,
-                curBoro: this.state.boros[i]
+                curBoro: this.state.boros[i],
+                curPlaceId: doc.data.results[0].place_id
               })
             }            
           }
@@ -270,11 +282,13 @@ if(this.state.schedule) {
       timeStamp: Math.round((new Date()).getTime() / 1000),
         north: this.state.north,
         south: this.state.south
+        }, () => {
+          console.log('hello')
         })    
       }, 30000)   
-    }
+    } 
     handlePlacePress(id) {
-      console.log(id)
+      
       return axios.get('https://maps.googleapis.com/maps/api/place/details/json?placeid='+id+'&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
     /*  return axios.get('https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {*/
       }).then((respon) => {
@@ -283,12 +297,14 @@ if(this.state.schedule) {
           uLatitude: respon.data.result.geometry.location.lat,
           uLongitude: respon.data.result.geometry.location.lng,
           address: respon.data.result.formatted_address,
+          uPlaceId: respon.data.result.place_id,
           modalVisible: false
 
         }, () => {
           this.getStops()
         })
       })
+      this.getDirections()
       clearInterval(this.intA);
     }
   autoC(inp) {
