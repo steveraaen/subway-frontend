@@ -234,6 +234,17 @@ if(this.state.schedule) {
                 inNYC: true,
                 curBoro: this.state.boros[i],
                 curPlaceId: doc.data.results[0].place_id
+              }, () => {
+                    if(this.state.inNYC === false) {
+                        this.setState({
+                          modalVisible: true
+                        })
+                      }
+                      else {
+                        this.setState({
+                          modalVisible: false
+                        })
+                      }
               })
             }            
           }
@@ -258,9 +269,9 @@ if(this.state.schedule) {
     }); 
   }
   getTransfers(route) {
-    /*return axios.get('http://127.0.0.1:5000/api/xfer/', {*/ 
-    return axios.get('https://subs-backend.herokuapp.com/api/xfer/', { 
-      
+    return axios.get('http://127.0.0.1:5000/api/xfer/', { 
+/*    return axios.get('https://subs-backend.herokuapp.com/api/xfer/', { */
+
       params: {
         route: this.state.route,
         
@@ -315,7 +326,8 @@ if(this.state.schedule) {
         }, () => {
           console.log('hello')
         })    
-      }, 30000)   
+      }, 30000)  
+
     } 
     handlePlacePress(id) {
       
@@ -339,7 +351,7 @@ if(this.state.schedule) {
     }
   autoC(inp) {
     if(this.state.autoResp) {
-      console.log(Array.isArray(inp))
+      console.log(this.state.autoResp.description)
     return (
         <FlatList 
           scrollEventThrottle={1}       
@@ -350,7 +362,7 @@ if(this.state.schedule) {
               onPress={() => this.handlePlacePress(item.place_id)}      
               >
                 <View style={{ height: 40}} >
-                   <Text numberOfLines={1}style={{fontSize: 16,fontWeight: 'bold', color: 'white'}} >{item.description}</Text>
+                   <Text numberOfLines={1}style={{fontSize: 14,fontWeight: 'bold', color: 'white'}} >{item.description.split(",")[0] + "," + item.description.split(",")[1] +  "," + item.description.split(",")[2]  }</Text>
                 </View>
             </TouchableOpacity>}
           keyExtractor={item => item.id}
@@ -385,12 +397,7 @@ if(this.state.schedule) {
 }
 // ------------------------------------------------
   render() {
-    if(this.state.inNYC === false) {
-        var index= 1
-      }
-      else {
-        var index= 0
-      }
+
     StatusBar.setHidden('hidden': false)
     StatusBar.setBarStyle("dark-content")
   const { navigate } = this.props.navigation;
@@ -542,8 +549,10 @@ if(this.state.schedule) {
       color: '#C0C0C0'
   },
     autoPlaces: {
-height: 140,
-width: this.state.width
+      height: 140,
+      width: this.state.width,
+      marginTop:18,
+      marginLeft: 14,
     },
     mapContainer: {
       flex: 1,
@@ -558,18 +567,25 @@ width: this.state.width
     return  ( 
       <View style={styles.container}>     
           <Modal
+              supportedOrientations={['portrait', 'landscape']}
               visible={this.state.modalVisible}
               animationType={'slide'}
               onRequestClose={() => this.closeModal()}
           >
           <View style={styles.imageBar}>
+                <Button
+                    onPress={() => this.closeModal()}
+                    title="Close">
+                </Button> 
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
           </View>
             <View style={styles.modalContainer}>
             <View style={styles.modalForm}>
-
-          <View >          
+          <View style={{marginTop: 12, marginBottom: 18}} >  
+                 <Text style={styles.timeText}>
+                     Enter the name of a place, or an address in New York City.
+                  </Text>        
              <View style={styles.imageBar}>
                <TextInput  
                   autoCorrect={false}
@@ -578,42 +594,21 @@ width: this.state.width
                   onChangeText={(text) => this.setState({input: text}, (text) => {this.getPlaces(this.state.input)})}                 
                 />                                   
           </View>
-          <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}</View>
+          <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}
+<Text> Tap on a plasce to see the nearest subway stations and next trains.</Text>
           </View>
-
-
+          </View>
+       
               <View style={styles.innerContainer}> 
-                <Button
-                    onPress={() => this.closeModal()}
-                    title="Close"
-                >
-                </Button>             
-                  <Text style={styles.timeText}>
-                     Nearest Subways should work well for you in {this.state.curBoro}.
-                  </Text>
+            
                 </View>
-              <View >
-                  <Text style={styles.plainText}>
-                      This app tries to do one thing - navigate the New York City subway system from your current location.
-                  </Text>
-                  <Text style={styles.plainText}>
-                       Scroll down on the top section to see more stations. Tap a station to view the schedule.
-                       The lower half of the screen displays the departure times. It defaults to displaying southbound trains, but by swiping left
-                       you will see the northbound schedule.  One further swipe left displays a map plotting your location and the location of the selected stop.
-                   </Text>
-            </View>
               </View>
             </View>
           </Modal>
          <View style={styles.scroll}>
           <Text numberOfLines={1} style={styles.plainText}>{this.state.address}</Text>
          <View style={{height: 70}}>
-         <Swiper
-            loop={false}
-            index={0}
-            loadMinimal={true}
-            showsPagination={false}
-            style={{height: 44}}>
+
           <View style={styles.imageBar}>
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
@@ -622,7 +617,6 @@ width: this.state.width
           </TouchableOpacity>
           </View>
 
-        </Swiper>
      </View>
         <ScrollView       
         pagingEnabled={true}>
