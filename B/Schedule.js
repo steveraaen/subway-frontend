@@ -117,6 +117,12 @@ if(this.props.north || this.props.south) {
       title={this.props.route} 
       description={this.props.name}
     />
+    <MapView.Marker
+    pinColor={'white'}
+      coordinate={this.state.userLocation}
+      title="You are here"
+     
+    />
 
   </MapView>
  </View>

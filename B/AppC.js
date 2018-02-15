@@ -50,8 +50,8 @@ class AppC extends Component {
       modalVisible: false,
       orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
       devicetype: Rescale.isTablet() ? 'tablet' : 'phone',
-      boros: ["Brooklyn, NY", "Bronx, NY", "Queens, NY", "New York, NY", "Manhattan, NY", "Staten Island, NY"],
-      inNYC: false,
+      boros: ["Brooklyn", "Bronx", "Queens", "New York", "Manhattan", "Staten Island"],
+     
    /*   placeName: 'Rockefeller',*/
 
     }
@@ -114,6 +114,7 @@ class AppC extends Component {
           }
         }
         this.setState({ data: response.data,
+                        length:response.data.length,
                         id: response.data[0].properties.stop_id,
                         feed: response.data[0].properties.stop_feed,
                         name: response.data[0].properties.stop_name,
@@ -229,7 +230,7 @@ if(this.state.schedule) {
         }).then((doc) => {
           for(let i =0; i < this.state.boros.length; i++) {
             if(doc.data.results[0].formatted_address.includes(this.state.boros[i])) {
-              console.log(doc.data.results)
+              console.log(doc.data.results[0].formatted_address)
               this.setState({
                 inNYC: true,
                 curBoro: this.state.boros[i],
@@ -249,7 +250,7 @@ if(this.state.schedule) {
             }            
           }
           this.setState({
-            address:  doc.data.results[0].formatted_address,
+            address:  doc.data.results[0].formatted_address.split(",")[0],
             latitude: doc.data.results[0].geometry.location[1],
             longitude: doc.data.results[0].geometry.location[0]
           })
@@ -314,7 +315,7 @@ if(this.state.schedule) {
         });      
       },
       (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true,  distanceFilter: 20 },
+      { enableHighAccuracy: true,  distanceFilter: 50 },
 )      
         }.bind(this)) 
   var intA = setInterval(() => {
@@ -326,7 +327,7 @@ if(this.state.schedule) {
         }, () => {
           console.log('hello')
         })    
-      }, 30000)  
+      }, 15000)  
 
     } 
     handlePlacePress(id) {
@@ -338,7 +339,7 @@ if(this.state.schedule) {
           details: respon,
           uLatitude: respon.data.result.geometry.location.lat,
           uLongitude: respon.data.result.geometry.location.lng,
-          address: respon.data.result.formatted_address,
+          address: respon.data.result.formatted_address.split(",")[0],
           uPlaceId: respon.data.result.place_id,
           modalVisible: false
 
@@ -351,7 +352,6 @@ if(this.state.schedule) {
     }
   autoC(inp) {
     if(this.state.autoResp) {
-      console.log(this.state.autoResp.description)
     return (
         <FlatList 
           scrollEventThrottle={1}       
@@ -398,17 +398,13 @@ if(this.state.schedule) {
 // ------------------------------------------------
   render() {
 
-    StatusBar.setHidden('hidden': false)
-    StatusBar.setBarStyle("dark-content")
   const { navigate } = this.props.navigation;
 
   if(this.state.orientation === 'portrait') {
-    scrollSize = 240;
     hght = this.state.height;
     wdth = this.state.width;
     flx = "column";
-    cmt = 24;
-    cpt = 4;
+    cpt = 22;
     ttxt = 20;
     ta = "center";
     ml = 0;
@@ -416,13 +412,9 @@ if(this.state.schedule) {
     scrmt = 12;
     spt = 0;
   } else if(this.state.orientation === 'landscape') {
-    scrollSize = 240;
-    schedSize = this.state.height;
-    wdth = this.state.width * .5;
-    hght = this.state.height;
+
     flx = "row";
-    cmt = 24;
-    cpt = 0;
+    cpt = 24;
     ttxt = 18;
     ta = "center";
     ml= 30;
@@ -437,9 +429,9 @@ if(this.state.schedule) {
       height: this.state.height,
       flexDirection: flx,
       justifyContent: 'flex-start',
-      marginTop: cmt,
+    /*  marginTop: cmt,*/
       paddingTop: cpt,
-      backgroundColor:'black',
+      backgroundColor:'#282942',
     },
     title: {
       flex: .18,
@@ -485,9 +477,10 @@ if(this.state.schedule) {
       textAlign: ta,
     },
     scroll: {
-      flex: 1,
-      paddingTop: 2,
+      flex: 1.1,
+      paddingTop: 4,
       backgroundColor:'#03003F',
+      marginBottom:10
     },
     modalForm: {
       flex: 1,
@@ -496,7 +489,7 @@ if(this.state.schedule) {
     schedule: {
       flex: 1,
       backgroundColor:'#03003F',
-      marginTop: 10,
+      /*marginTop: 10,*/
       paddingTop: spt,
       flexDirection: 'row',
       flexWrap: 'wrap'
@@ -526,10 +519,11 @@ if(this.state.schedule) {
       justifyContent: 'space-around',
       alignItems: 'stretch',
       backgroundColor: '#03003F',
-      marginTop: cpt
+      paddingTop: cpt
   },  
     modalContainer: {
       flex: 1,
+      marginBottom:24,
       justifyContent: 'flex-start',
       backgroundColor: 'white',
   },
@@ -546,13 +540,16 @@ if(this.state.schedule) {
       fontWeight: 'bold',
       textAlign: 'center',
       paddingBottom: 6,
-      color: '#C0C0C0'
+      color: 'white',
+      backgroundColor: '#03003F'
   },
     autoPlaces: {
       height: 140,
       width: this.state.width,
-      marginTop:18,
+      marginTop:14,
       marginLeft: 14,
+      borderBottomWidth: 2,
+      borderBottomColor: 'white'
     },
     mapContainer: {
       flex: 1,
@@ -565,18 +562,26 @@ if(this.state.schedule) {
   });
 
     return  ( 
-      <View style={styles.container}>     
+
+
+      <View style={styles.container}>   
+            <View>
+         <StatusBar barStyle="light-content" hidden ={false} style={{marginTop: 44}}/>
+      </View>
           <Modal
               supportedOrientations={['portrait', 'landscape']}
               visible={this.state.modalVisible}
               animationType={'slide'}
               onRequestClose={() => this.closeModal()}
+
           >
+
           <View style={styles.imageBar}>
-                <Button
+                            <TouchableOpacity
                     onPress={() => this.closeModal()}
-                    title="Close">
-                </Button> 
+                    >
+                    <Text style={{paddingTop: 14}}>  <Icon name="ios-arrow-back" size={24} color="white"/></Text>  
+                </TouchableOpacity> 
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
           </View>
@@ -595,29 +600,30 @@ if(this.state.schedule) {
                 />                                   
           </View>
           <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}
-<Text> Tap on a plasce to see the nearest subway stations and next trains.</Text>
+            <Text> Tap on a plasce to see the nearest subway stations and next trains.</Text>
           </View>
           </View>
        
               <View style={styles.innerContainer}> 
-            
+
                 </View>
               </View>
             </View>
           </Modal>
          <View style={styles.scroll}>
-          <Text numberOfLines={1} style={styles.plainText}>{this.state.address}</Text>
+
          <View style={{height: 70}}>
 
           <View style={styles.imageBar}>
           <Image  source={require('../assets/d20x3.png')} />
           <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
          <TouchableOpacity onPress={() => this.openModal()} >        
-        <Text style={{paddingTop: 6}}>  <Icon name="ios-information-circle" size={20} color="white"/></Text>       
+        <Text style={{paddingTop: 14}}>  <Icon name="ios-search" size={24} color="white"/></Text>       
           </TouchableOpacity>
           </View>
-
      </View>
+           <View style={{flex: .2, marginBottom: 8}}><Text numberOfLines={1} style={styles.plainText}>{this.state.address} - <Text style={{fontSize: 16,}}>{this.state.length} nearby stations</Text></Text></View>
+           <View style={{backgroundColor: '#282942', height: 8}}></View>
         <ScrollView       
         pagingEnabled={true}>
         <FlatList 
