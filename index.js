@@ -1,2 +1,4 @@
+import { AppRegistry } from 'react-native';
+import AppC from './B/AppC';
 
-import './B/AppC';
+AppRegistry.registerComponent('nearby', () => AppC);

@@ -55,6 +55,7 @@ if(this.props.north || this.props.south) {
 		<View style={this.props.styles.mapContainer}>
 		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text></View>
 		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
+			
 			<FlatList
 				style={{height:380, marginTop: 8}}
 				header={"Northbound Trains"}
@@ -118,9 +119,10 @@ if(this.props.north || this.props.south) {
       description={this.props.name}
     />
     <MapView.Marker
-    pinColor={'white'}
+    	pinColor={'cyan'}
       coordinate={this.state.userLocation}
-      title="You are here"
+      title={this.props.ploc}
+      flat={true}
      
     />
 

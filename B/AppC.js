@@ -32,18 +32,19 @@ import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
 /*import GooglePlacesInput from './AutoComplete.js'*/
   
-class AppC extends Component {
-    static navigationOptions = {
+export default class AppC extends Component {
+/*    static navigationOptions = {
       header: null,
      headerMode: 'screen',
      headerTitle: 'Real-Time Subways',
      headerStyle: { backgroundColor: 'gray', height: 50 },
      headerTitleStyle: {  color: 'white', fontSize:22, fontWeight: 'bold', fontStyle: 'italic'},
 
-  };
+  };*/
   constructor(props) {
     super(props);
     this.state = {
+      refreshing: false,
       appState: AppState.currentState,
       uLnglat: null,
       lineColors: lineColors,
@@ -73,16 +74,25 @@ class AppC extends Component {
     this._handleAppStateChange = this._handleAppStateChange.bind(this)
     this.getTransfers = this.getTransfers.bind(this)
     this.mergeStopsTransfers = this.mergeStopsTransfers.bind(this)
- /*   this.openSearchModal = this.openSearchModal.bind(this)*/
+    this.openModal = this.openModal.bind(this)
+    this.closeModal = this.closeModal.bind(this)
+    this.checkIfInNYC = this.checkIfInNYC.bind(this)
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
     
   }
+  _onRefresh() {
+    this.setState({refreshing: true});
+    fetchData().then(() => {
+      this.setState({refreshing: false});
+    });
+  }
 // ---------------------------------------------------------
   _handleAppStateChange = (nextAppState) => {
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      console.log('App has come to the foreground!')
-    }
+      console.log('App has come to the foreground!' + nextAppState)
+      this.getStops()
+    } 
     this.setState({appState: nextAppState});
   }
     openModal() {
@@ -92,7 +102,7 @@ class AppC extends Component {
     closeModal() {
       this.setState({modalVisible:false});
     }
-    getStops(lng,lat) {
+    getStops() {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
      return axios.get('https://subs-backend.herokuapp.com/api/stops/', {
             params: {
@@ -233,21 +243,17 @@ if(this.state.schedule) {
               console.log(doc.data.results[0].formatted_address)
               this.setState({
                 inNYC: true,
+                modalVisible: false,
                 curBoro: this.state.boros[i],
                 curPlaceId: doc.data.results[0].place_id
-              }, () => {
-                    if(this.state.inNYC === false) {
-                        this.setState({
-                          modalVisible: true
-                        })
-                      }
-                      else {
-                        this.setState({
-                          modalVisible: false
-                        })
-                      }
+              }/*, () => {
+                this.checkIfInNYC() 
+              }*/)
+            }  else if(!this.state.inNYC){
+              this.setState({
+                modalVisible: true
               })
-            }            
+            }          
           }
           this.setState({
             address:  doc.data.results[0].formatted_address.split(",")[0],
@@ -291,9 +297,19 @@ if(this.state.schedule) {
       console.log(tfrs)
     
   }
+  checkIfInNYC() {
+    if(this.state.inNYC) {
+    console.log('In NY')
+      this.closeModal()
+    }
+    else {
+      console.log('Not In NY')
+      this.openModal()
+    }
+  }
 // ----------------------------------------------------
     componentWillMount() { 
-         
+
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -310,8 +326,9 @@ if(this.state.schedule) {
           uPosition: position.coords,
          error: null,
         }, () => {
-          this.getStops(this.state.longitude,this.state.latitude)
           this.revGeocode(this.state.uLatitude,this.state.uLongitude)
+          this.getStops(this.state.longitude,this.state.latitude)
+
         });      
       },
       (error) => this.setState({ error: error.message }),
@@ -325,6 +342,7 @@ if(this.state.schedule) {
         north: this.state.north,
         south: this.state.south
         }, () => {
+
           console.log('hello')
         })    
       }, 15000)  
@@ -372,10 +390,13 @@ if(this.state.schedule) {
   }
 // ----------------------------------------------------
   componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange);  
-     /*  SplashScreen.hide();*/
+    AppState.addEventListener('change', this._handleAppStateChange);     
+     
   }
-  componentWillUnmount() {
+/*  shutdown() {
+    if(this.ppState)
+  }
+  */componentWillUnmount() {
   clearInterval(this.intA);
 
   Dimensions.removeEventListener("change", this.handler);
@@ -398,13 +419,13 @@ if(this.state.schedule) {
 // ------------------------------------------------
   render() {
 
-  const { navigate } = this.props.navigation;
+/*  const { navigate } = this.props.navigation;*/
 
   if(this.state.orientation === 'portrait') {
     hght = this.state.height;
     wdth = this.state.width;
     flx = "column";
-    cpt = 22;
+    cpt = 6;
     ttxt = 20;
     ta = "center";
     ml = 0;
@@ -414,13 +435,13 @@ if(this.state.schedule) {
   } else if(this.state.orientation === 'landscape') {
 
     flx = "row";
-    cpt = 24;
+    cpt = 6;
     ttxt = 18;
     ta = "center";
     ml= 30;
-    schmt = 26;
+    schmt = 38;
     scrmt = 12;
-    spt= 32;
+    spt= 0;
   }
   const styles = StyleSheet.create({
     container: {
@@ -431,7 +452,7 @@ if(this.state.schedule) {
       justifyContent: 'flex-start',
     /*  marginTop: cmt,*/
       paddingTop: cpt,
-      backgroundColor:'#282942',
+      backgroundColor:'#03003F',
     },
     title: {
       flex: .18,
@@ -519,11 +540,10 @@ if(this.state.schedule) {
       justifyContent: 'space-around',
       alignItems: 'stretch',
       backgroundColor: '#03003F',
-      paddingTop: cpt
+      paddingTop: 20
   },  
     modalContainer: {
       flex: 1,
-      marginBottom:24,
       justifyContent: 'flex-start',
       backgroundColor: 'white',
   },
@@ -573,7 +593,6 @@ if(this.state.schedule) {
               visible={this.state.modalVisible}
               animationType={'slide'}
               onRequestClose={() => this.closeModal()}
-
           >
 
           <View style={styles.imageBar}>
@@ -600,12 +619,12 @@ if(this.state.schedule) {
                 />                                   
           </View>
           <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}
-            <Text> Tap on a plasce to see the nearest subway stations and next trains.</Text>
-          </View>
+         </View>
           </View>
        
               <View style={styles.innerContainer}> 
-
+            <Text style={{color: 'white'}}>Tap on a place to see the nearest subway stations and next trains.</Text>
+ 
                 </View>
               </View>
             </View>
@@ -644,7 +663,7 @@ if(this.state.schedule) {
         </ScrollView>
         </View>
         <View style={styles.schedule}>
-        <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width}/>
+        <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width} ploc={this.state.address}/>
       </View>
      
     </View>
@@ -654,9 +673,13 @@ if(this.state.schedule) {
   }
 }
 
-export const nearby = StackNavigator({
+/*export const nearby = StackNavigator({
   AppC: { 
     screen: AppC,
    }
 });
-AppRegistry.registerComponent('nearby', () => nearby);
+AppRegistry.registerComponent('nearby', () => nearby);*/
+
+
+
+
