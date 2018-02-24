@@ -21,7 +21,8 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
-
+citibike.json
+citibike.ndjson
 # Android/IntelliJ
 #
 build/
