@@ -35,3 +35,13 @@ Features:
 - Color coding uses official MTA line colors for easy recognition
 - No advertising
 - No sign-up required
+
+
+
+
+
+
+
+
+
+ <Image  source={require('../assets/d20x3.png')} />

@@ -79,7 +79,6 @@ export default class AppC extends Component {
     this.closeModal = this.closeModal.bind(this)
     this.checkIfInNYC = this.checkIfInNYC.bind(this)
     this.getBusses = this.getBusses.bind(this)
-    this.milesToYardsFeet = this.milesToYardsFeet.bind(this)
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
     
@@ -117,7 +116,8 @@ export default class AppC extends Component {
         } else {
           console.log('failed response to busses')
         }
-        })  
+        })
+  
     }
     getStops() {
     /*return axios.get('http://127.0.0.1:5000/api/stops/', { */ 
@@ -159,7 +159,6 @@ export default class AppC extends Component {
                        
                       },() => {
                         this.getSchedule(this.state.id, this.state.feed)
-                        this.milesToYardsFeet(this.state.data)
                       });
       })
       .catch(err => console.log(err));
@@ -365,6 +364,9 @@ if(this.state.schedule) {
       timeStamp: Math.round((new Date()).getTime() / 1000),
         north: this.state.north,
         south: this.state.south
+        }, () => {
+
+          console.log('hello')
         })    
       }, 15000)  
 
@@ -411,8 +413,8 @@ if(this.state.schedule) {
   }
 // ----------------------------------------------------
   componentDidMount() {
-    AppState.addEventListener('change', this._handleAppStateChange); 
-      
+    AppState.addEventListener('change', this._handleAppStateChange);     
+     
   }
 /*  shutdown() {
     if(this.ppState)
@@ -437,33 +439,6 @@ navigator.geolocation.clearWatch(this.watchID);
       this.getTransfers(this.state.route)
     })
 }
-milesToYardsFeet(datArr) {
-
-    var distMeasurement, dist, miles, yards, feet;
-    for(let i = 0; i < datArr.length; i++) {
-        miles = datArr[i].distance.dist
-        yards = miles * 1760
-        feet = miles * 5280
-      if(datArr[i].distance.dist > .5) {
-            distMeasurement = "miles";
-            dist = miles.toFixed(2)
-            datArr[i].distMeasurement = distMeasurement
-            datArr[i].dist = dist
-        } else if(datArr[i].distance.dist < .5 && datArr[i].distance.dist > .1 ) {
-            distMeasurement = "yards";
-            dist = yards.toFixed(0)
-            datArr[i].distMeasurement = distMeasurement
-            datArr[i].dist = dist        
-        } else if(datArr[i].distance.dist < .1){
-            distMeasurement = "feet";
-            dist = feet.toFixed(0) 
-            datArr[i].distMeasurement = distMeasurement
-            datArr[i].dist = dist         
-        }
-        console.log(datArr)
-      }
-  }
-
 // ------------------------------------------------
   render() {
 
@@ -479,6 +454,7 @@ milesToYardsFeet(datArr) {
     ml = 0;
     schmt = 0;
     scrmt = 12;
+    spt = 0;
   } else if(this.state.orientation === 'landscape') {
 
     flx = "row";
@@ -488,6 +464,7 @@ milesToYardsFeet(datArr) {
     ml= 30;
     schmt = 38;
     scrmt = 12;
+    spt= 0;
   }
   const styles = StyleSheet.create({
     container: {
@@ -544,21 +521,22 @@ milesToYardsFeet(datArr) {
       textAlign: ta,
     },
     scroll: {
-      flex: 1,
-     /* paddingTop: 6,*/
+      flex: 1.1,
+      paddingTop: 4,
       backgroundColor:'#03003F',
-      marginTop:10,
-      marginBottom:1
+      marginBottom:10
     },
     modalForm: {
       flex: 1,
       backgroundColor:'#03003F',
     },
     schedule: {
-      flex: 1.28,
+      flex: 1,
       backgroundColor:'#03003F',
+      /*marginTop: 10,*/
+      paddingTop: spt,
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexWrap: 'wrap'
     },
     stopsText: {
       fontSize:  18,
@@ -576,14 +554,12 @@ milesToYardsFeet(datArr) {
     },
     touchOp: {
       flex: .25,
-      marginLeft: 30,
-      marginRight: 30,
+      backgroundColor:'#03003F',
       borderBottomWidth: 1,
-      borderBottomColor: '#34A5DA',
+      borderBottomColor: 'gray',
     },  
     imageBar: {
-      flex: .14,
-      alignItems: 'center',
+      flexDirection: 'row',
       backgroundColor: '#03003F',
       paddingTop: 20,
   },  
@@ -609,10 +585,12 @@ milesToYardsFeet(datArr) {
       backgroundColor: '#03003F'
   },
     autoPlaces: {
-      flexGrow: .3,
+      height: 140,
       width: this.state.width,
       marginTop:14,
       marginLeft: 14,
+      borderBottomWidth: 2,
+      borderBottomColor: 'white'
     },
     mapContainer: {
       flex: 1,
@@ -640,8 +618,11 @@ milesToYardsFeet(datArr) {
               <TouchableOpacity
                 onPress={() => this.closeModal()}
               >
-                <Text style={{paddingTop: 14}}><Icon name="ios-arrow-back" size={24} color="white"/></Text>  
-              </TouchableOpacity>
+                <Text style={{paddingTop: 14}}>  <Icon name="ios-arrow-back" size={24} color="white"/></Text>  
+              </TouchableOpacity> 
+
+         
+          <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
           </View>
             <View style={styles.modalContainer}>
             <View style={styles.modalForm}>
@@ -649,12 +630,11 @@ milesToYardsFeet(datArr) {
                  <Text style={styles.timeText}>
                      Enter the name of a place, or an address in New York City.
                   </Text>        
-             <View style={{alignItems: 'center', marginTop: 12}}>
+             <View style={styles.imageBar}>
                <TextInput  
-                  placeHolder="Madison Square Garden "
                   autoCorrect={false}
                   value={this.state.input}
-                  style={{height: 30, paddingLeft: 20, borderColor: 'gray', borderWidth: 1, width: 220, backgroundColor: 'white'}}          
+                  style={{height: 30, borderColor: 'gray', borderWidth: 1, width: 220, backgroundColor: 'white'}}          
                   onChangeText={(text) => this.setState({input: text}, (text) => {this.getPlaces(this.state.input)})}                 
                 />                                   
           </View>
@@ -669,23 +649,29 @@ milesToYardsFeet(datArr) {
               </View>
             </View>
           </Modal>
-         
+         <View style={styles.scroll}>
 
-         
-          <View style={styles.imageBar}>           
+         <View style={{height: 70}}>
+
+          <View style={styles.imageBar}>
+            <Image  source={require('../assets/d20x3.png')} />
+            <Text style={{color: '#C0C0C0', paddingTop:12, fontSize: 24, fontWeight: 'bold', fontFamily: 'Bradley Hand'}}>Nearby Subways </Text>
+            <View style={{width: 40, height: 40, flex: 1, flexDirection: 'column', alignItems: 'flex-end'}}>
               <View style={{marginTop:2, marginRight: 20}}>   
                 <TouchableOpacity onPress={() => this.openModal()} >        
-                  <Text style={{paddingTop: 1}}>  <Icon name="ios-search" size={28} color="white"/></Text>       
+                  <Text style={{paddingTop: 1}}>  <Icon name="ios-search" size={22} color="white"/></Text>       
                 </TouchableOpacity>
               </View>  
+              <View style={{marginTop: 4, marginRight: 20}}>  
+                <TouchableOpacity onPress={() => this.getBusses()} >        
+                  <Text style={{paddingTop: 1}}>  <Icon name="ios-bus" size={22} color="white"/></Text>       
+                </TouchableOpacity>
+              </View>
           </View>
-    
-     <View style={styles.scroll}>
-           <View style={{ marginBottom: 14, marginTop: 4}}><Text style={{marginLeft: 30, fontSize: 20, fontWeight: 'bold', color: 'white'}}>{this.state.length} Stations <Text style={{color: '#80D7EC',fontSize: 16, fontStyle: 'italic'}}>  ( within a half mile )</Text></Text>
-            
-           </View>
-           <View style={{backgroundColor: '#34A5DA', height: 2, marginLeft: 30, marginRight: 30}}></View>
-        
+          </View>
+     </View>
+           <View style={{flex: .25, marginBottom: 4, marginTop: 4}}><Text numberOfLines={1} style={styles.plainText}>{this.state.address} - <Text style={{fontSize: 16,}}>{this.state.length} nearby stations</Text></Text></View>
+           <View style={{backgroundColor: '#282942', height: 8}}></View>
         <ScrollView       
         pagingEnabled={true}>
         <FlatList 
@@ -698,14 +684,13 @@ milesToYardsFeet(datArr) {
               >
                 <View style={styles.title} >
                   <Text style={styles.stopsText}><Text style={{color: item.properties.color}}>{item.properties.stop_name}</Text></Text>
-                 <Text style={styles.timeText} >{item.dist}  {item.distMeasurement}</Text>
+                 <Text style={styles.timeText} >{item.distance.dist.toFixed(2) + " miles"}</Text>
                 </View>
             </TouchableOpacity>}
           keyExtractor={item => item.properties.stop_id}
         />
         </ScrollView>
         </View>
-        <View style={{backgroundColor: '#34A5DA', height: 2, marginBottom: 10, marginLeft: 30, marginRight: 30}}></View>
         <View style={styles.schedule}>
         <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width} ploc={this.state.address}/>
       </View>

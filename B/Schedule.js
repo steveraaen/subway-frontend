@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   StyleSheet,
   Text,
@@ -40,7 +41,7 @@ componentWillReceiveProps() {
 	 		longitude: this.props.lng
 	 	}
 	 })
-}
+	}
 }
 render() {
     const width = Dimensions.get('window').width;
@@ -50,19 +51,21 @@ if(this.props.north || this.props.south) {
 	return ( 
 		<Swiper
 		loop={false}
+		index={0}
+
 		
 		>
-		<View style={this.props.styles.mapContainer}>
+		<View>
 		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text></View>
 		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
 			
 			<FlatList
-				style={{height:380, marginTop: 8}}
+				style={{height:420, marginTop: 8, paddingBottom: 18}}
 				header={"Northbound Trains"}
 				data={this.props.north}
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8, marginLeft: 34}}>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8,  marginRight: 30,borderBottomWidth: 1, borderBottomColor: item.color}}>
 							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
 							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
 							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
@@ -72,7 +75,7 @@ if(this.props.north || this.props.south) {
 				 keyExtractor={item => item.departureTime}
 			/>			 
 			</View>
-		<View style={this.props.styles.mapContainer}>
+		<View >
 		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextSouth}>Southbound</Text></View>
 		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
 			<FlatList
@@ -81,7 +84,7 @@ if(this.props.north || this.props.south) {
 				data={this.props.south}
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8, marginLeft: 34}}>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8,  marginRight: 30,borderBottomWidth: 1, borderBottomColor: item.color}}>
 							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
 							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
 							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
@@ -128,11 +131,10 @@ if(this.props.north || this.props.south) {
 
   </MapView>
  </View>
-		</Swiper>
-	
+		</Swiper>	
 		)
 		} else return (
-			<View style={{justifyContent: 'center', paddingLeft: 30}}><Text style={{color: "#FF6319", fontSize: 20, textAlign: 'center'}}>Waiting for data from the MTA</Text></View>
+			<View style={{backgroundColor: '#03003F', flex: 1, justifyContent: 'center'}}><ActivityIndicator size="large" color="#0000ff"/></View>
 			)	
 		}
 	}
