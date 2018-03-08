@@ -23,10 +23,10 @@ var lineColors = {
     color: "#FCCC0A", 
     routeArray: ["N", "Q", "R", "W"]
   },
-  s: {
+/*  s: {
     color: "#808183", 
     routeArray: ["S"]
-  },
+  },*/
   oneTwoThree: {
     color: "#EE352E", 
     routeArray: ["1", "2", "3"]
@@ -34,6 +34,10 @@ var lineColors = {
   fourFiveSix: {
     color: "#00933C", 
     routeArray: ["4", "5", "6", "5X", "6X"]
+  },
+  si: {
+    color: "#4D96FF", 
+    routeArray: ["S"]
   },
   l: {
     color: "#A7A9AC",

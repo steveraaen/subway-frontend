@@ -51,52 +51,46 @@ if(this.props.north || this.props.south) {
 	return ( 
 		<Swiper
 		loop={false}
-		index={0}
-
-		
+		index={0}		
 		>
-		<View>
+		<View >
 		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextNorth}>Northbound</Text></View>
-		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
-			
+		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>			
 			<FlatList
 				style={{height:420, marginTop: 8, paddingBottom: 18}}
 				header={"Northbound Trains"}
 				data={this.props.north}
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8,  marginRight: 30,borderBottomWidth: 1, borderBottomColor: item.color}}>
-							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
-							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
-							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
-							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'flex-start', marginTop: 8,  marginLeft: 30, marginRight: 30,borderBottomWidth: 1, borderBottomColor: item.color}}>
+							<View  allowFontScaling={true} style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
+							<View  allowFontScaling={true} style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
+							<View  allowFontScaling={true} style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
+							<View  allowFontScaling={true} style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
 						</View>
 					</FadeInView>}
 				 keyExtractor={item => item.departureTime}
 			/>			 
 			</View>
-		<View >
+		<View>
 		<View style={{marginBottom: 16}}><Text style={this.props.styles.schedTitleTextSouth}>Southbound</Text></View>
-		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>	
+		<Text style={this.props.styles.chosenTitleText}><Text style={{color: this.props.color}}>{this.props.name}</Text></Text>			
 			<FlatList
-				style={{height:380, marginTop: 8}}
-				header={"Southbound Trains"}
+				style={{height:420, marginTop: 8, paddingBottom: 18}}
+				header={"Northbound Trains"}
 				data={this.props.south}
 				renderItem={({item}) => 
 					<FadeInView>
-						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8,  marginRight: 30,borderBottomWidth: 1, borderBottomColor: item.color}}>
-							<View style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
-							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
-							<View style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
-							<View style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
+						<View style= {{flex: 1, flexDirection: 'row', alignContent: 'space-around', marginTop: 8,  marginRight: 30, marginLeft: 30, borderBottomWidth: 1, borderBottomColor: item.color}}>
+							<View  allowFontScaling={true} style={{flex: .2}}><Text style= {{ fontSize: 22,  fontWeight: 'bold', color: item.color, textAlign: 'center'}}>{item.routeId}</Text></View>	
+							<View  allowFontScaling={true} style={{flex: .3}}><Text style={{ fontSize: 16, color: '#A7A9AC', fontWeight: 'bold'}}>{moment.unix(item.departureTime).format("HH:mm")}</Text></View>
+							<View  allowFontScaling={true} style={{flex: .1}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>{Math.round(((moment.unix(item.departureTime) / 1000) - Math.round((new Date()).getTime() / 1000)) / 60)}</Text></View>
+							<View  allowFontScaling={true} style={{flex: .3}}><Text style={{ fontSize: 16, color: 'white', fontWeight: 'bold'}}>minutes</Text></View>
 						</View>
 					</FadeInView>}
 				 keyExtractor={item => item.departureTime}
 			/>			 
 			</View>
-
-
-
 <View style={this.props.styles.mapContainer}>	
       <MapView
       scrollEnabled={false}  
