@@ -41,7 +41,11 @@ componentWillReceiveProps() {
 	 		longitude: this.props.lng
 	 	}
 	 })
+	 this.emptySched = this.emptySched.bind(this)
 	}
+}
+emptySched() {
+  return (<View><Text style={this.props.styles.titleText}>No train data available right now.</Text></View>)
 }
 render() {
     const width = Dimensions.get('window').width;
@@ -70,6 +74,7 @@ if(this.props.north || this.props.south) {
 						</View>
 					</FadeInView>}
 				 keyExtractor={item => item.departureTime}
+				 ListEmptyComponent={this.emptySched}
 			/>			 
 			</View>
 		<View>
@@ -89,6 +94,7 @@ if(this.props.north || this.props.south) {
 						</View>
 					</FadeInView>}
 				 keyExtractor={item => item.departureTime}
+				 ListEmptyComponent={this.emptySched}
 			/>			 
 			</View>
 <View style={this.props.styles.mapContainer}>	

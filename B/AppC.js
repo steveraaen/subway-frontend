@@ -126,7 +126,7 @@ export default class AppC extends Component {
 
         var curColor;
         for(let i = 0; i < response.data.length; i++) {
-          console.log(response.data[i].distance.dist)
+       /*   console.log(response.data[i].distance.dist)*/
 
           var resObj = response.data[i].properties;         
           var stpLine = resObj.stop_id[0];
@@ -358,9 +358,7 @@ this.setState({loading: true})
          error: null,
         }, () => {
           this.revGeocode(this.state.uLatitude,this.state.uLongitude)
-          this.getStops(this.state.longitude,this.state.latitude)
-
-          
+          this.getStops(this.state.longitude,this.state.latitude)          
         });      
       },
       (error) => this.setState({ error: error.message }),
@@ -425,6 +423,11 @@ this.setState({loading: true})
 
 // ----------------------------------------------------
   componentDidMount() {
+        this.setState({
+            orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
+            width: Dimensions.get('window').width,
+            height: Dimensions.get('window').height
+        });
     AppState.addEventListener('change', this._handleAppStateChange);  
 
   }
@@ -467,6 +470,7 @@ navigator.geolocation.clearWatch(this.watchID);
     schmt = 0;
     schflx = 1.28;
     scrflx = 1.15
+    iconLeft= 30;
   } else if(this.state.orientation === 'landscape') {
 
     flx = "row";
@@ -474,9 +478,10 @@ navigator.geolocation.clearWatch(this.watchID);
     cpt = 6;
     ttxt = 18;
     ta = "center";
-    schmt = 10;
-    schflx = 1.4;
-    scrflx = 1.2
+    schmt = 40;
+    schflx = 1.6;
+    scrflx = 1.2;
+    iconLeft= 0;
   }
   const styles = StyleSheet.create({
     container: {
@@ -573,7 +578,7 @@ navigator.geolocation.clearWatch(this.watchID);
     imageBar: {
       flex: .14,
       flexDirection: revflx,
-      justifyContent: 'space-around',
+      justifyContent: 'space-between',
       backgroundColor: '#03003F',
       paddingTop: 20,
   },  
@@ -608,6 +613,11 @@ navigator.geolocation.clearWatch(this.watchID);
       flex: 1,
       justifyContent: 'center',
       
+  },
+  iconLeft: {
+    alignItems: 'flex-end', 
+    marginTop:8, 
+    marginLeft: iconLeft
   },
     map: {
     ...StyleSheet.absoluteFillObject,
@@ -657,13 +667,14 @@ navigator.geolocation.clearWatch(this.watchID);
               </View>
             </View>
           </Modal>   
+        
           <View style={styles.imageBar}>  
-              <View style={{alignItems: 'flex-end', marginTop:8}}>   
+              <View style={styles.iconLeft}>   
                 <TouchableOpacity onPress={() => this.setState({uLongitude: this.state.deviceLng, uLatitude: this.state.deviceLat, iconColor: "gray"}, () => {this.getStops(this.state.uLongitude, this.state.uLatitude)})} >        
                   <Text style={{paddingTop: 1}}>  <Icon name="ios-navigate-outline" size={28} color={this.state.iconColor}/></Text>                             
                 </TouchableOpacity>
               </View>           
-              <View style={{alignItems: 'flex-start', marginTop:8}}>   
+              <View style={{alignItems: 'flex-start', marginTop:8, marginRight: 30}}>   
                 <TouchableOpacity onPress={() => this.openModal()} >        
                   <Text style={{paddingTop: 1}}>  <Icon name="ios-search" size={28} color="white"/></Text>                             
                 </TouchableOpacity>
@@ -701,7 +712,17 @@ navigator.geolocation.clearWatch(this.watchID);
         <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width} ploc={this.state.address}/>
       </View>
     </View> 
-    )} else { return ( <View style={{backgroundColor: '#03003F', flex: 1, justifyContent: 'center'}}><ActivityIndicator size="large" color="#0000ff" animating={this.state.loading}/></View>)}
+    )} else { 
+  return ( 
+    <View style={{flex: 1, justifyContent: 'center'}}>
+      <Image 
+        source={require('../assets/nearbyScreenShot.png')}
+        style={{height: this.state.height, width: this.state.width}}
+        />
+     
+      
+      
+    </View>)}
    
   }
 }
