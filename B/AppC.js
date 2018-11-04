@@ -30,9 +30,7 @@ import Swiper from 'react-native-swiper';
 import lineColors from '../colors.js';
 import Schedule from './Schedule.js';
 import FadeInView from './Animations.js';
-/*import Busses from './Busses.js';*/
-
-  
+/*import Busses from './Busses.js';*/  
 export default class AppC extends Component {
 /*    static navigationOptions = {
       header: null,
@@ -80,6 +78,7 @@ export default class AppC extends Component {
     this.closeModal = this.closeModal.bind(this)
     this.checkIfInNYC = this.checkIfInNYC.bind(this)
 /*    this.getBusses = this.getBusses.bind(this)*/
+this.separator = this.separator.bind(this)
     mixins: [TimerMixin]
     const dim = Dimensions.get('screen');
     
@@ -291,7 +290,7 @@ if(this.state.schedule) {
 
   }
     getPlaces(place) {
-     return axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' + place + '&radius=50000&minLength=2&administrative_area_level_1=NewYork&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+     return axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=' + place + '&radius=35000&minLength=3&location=40.676666,-73.983944&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((resp) => {
           this.setState({
             autoResp: resp.data.predictions
@@ -454,6 +453,17 @@ navigator.geolocation.clearWatch(this.watchID);
     /*  this.getTransfers(this.state.route)*/
     })
 }
+  separator() {
+    return(
+          <View
+            style={{
+              borderBottomColor: '#34A5DA',
+              borderBottomWidth: 1,
+              margin: 6
+            }}
+          />
+      )
+  }
 // ------------------------------------------------
   render() {
 
@@ -492,14 +502,14 @@ navigator.geolocation.clearWatch(this.watchID);
       justifyContent: 'flex-start',
     /*  marginTop: cmt,*/
       paddingTop: cpt,
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
     },
     title: {
       flex: .18,
       paddingTop: 5,
       paddingBottom: 5,
       justifyContent: 'center',
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
 
     },
     titleText: {
@@ -508,7 +518,7 @@ navigator.geolocation.clearWatch(this.watchID);
       fontStyle: 'italic',
       fontWeight: 'bold',
       textAlign: ta,
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
     },
     schedTitleTextNorth: {
       marginTop: schmt,
@@ -516,7 +526,7 @@ navigator.geolocation.clearWatch(this.watchID);
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
       textAlign: 'left',
       paddingLeft: 14
     },
@@ -526,12 +536,12 @@ navigator.geolocation.clearWatch(this.watchID);
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
       textAlign: 'right',
       paddingRight: 14
     },
      chosenTitleText: {
-      color: '#03003F',
+      color: '#000000',
       fontSize: 18,
       fontStyle: 'italic',
       fontWeight: 'bold',
@@ -540,33 +550,33 @@ navigator.geolocation.clearWatch(this.watchID);
     scroll: {
       flex: scrflx,
      /* paddingTop: 6,*/
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
       marginTop:10,
       marginBottom:1
     },
     modalForm: {
       flex: 1,
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
     },
     schedule: {
       flex: schflx,
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
       flexDirection: 'row',
       flexWrap: 'wrap',
     },
     stopsText: {
 
-      fontSize:  16,
+      fontSize:  18,
       fontWeight: 'bold',
       textAlign: "center",
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
     },
     timeText: {
-      fontSize: 17,
+      fontSize: 18,
       fontWeight: 'bold',
       color: 'white',
       textAlign: "center",
-      backgroundColor:'#03003F',
+      backgroundColor:'#000000',
       marginBottom: 2
     },
     touchOp: {
@@ -579,7 +589,7 @@ navigator.geolocation.clearWatch(this.watchID);
       flex: .14,
       flexDirection: revflx,
       justifyContent: 'space-between',
-      backgroundColor: '#03003F',
+      backgroundColor: '#000000',
       paddingTop: 20,
   },  
     modalContainer: {
@@ -601,7 +611,7 @@ navigator.geolocation.clearWatch(this.watchID);
       textAlign: 'center',
       paddingBottom: 6,
       color: 'white',
-      backgroundColor: '#03003F'
+      backgroundColor: '#000000'
   },
     autoPlaces: {
       flexGrow: .3,
@@ -659,8 +669,7 @@ navigator.geolocation.clearWatch(this.watchID);
                   onChangeText={(text) => this.setState({input: text}, (text) => {this.getPlaces(this.state.input)})}                 
                 />                                   
             </View>
-            <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}
-           </View>
+            <View style={styles.autoPlaces}>{this.autoC(this.state.autoResp)}</View>
             </View>
        
 
@@ -681,11 +690,8 @@ navigator.geolocation.clearWatch(this.watchID);
               </View> 
           </View>
           <View style={styles.scroll}>
-          <View style={{alignItems: 'center'}}><Text numberOfLines={1} style={{fontSize: 14, color: 'white'}}>{this.state.address}</Text></View>
-           <View style={{ marginBottom: 14, marginTop: 6, alignItems: 'center'}}><Text style={{ fontSize: 20, fontWeight:'bold', fontFamily:'ChalkboardSE-Bold', color: 'white'}}>{this.state.stopCount}<Text style={{color: 'coral',fontSize: 22, fontFamily: 'BradleyHandITCTT-Bold', fontWeight: 'bold'}}>  Nearby Subways</Text></Text>
-            
-           </View>
-           <View style={{backgroundColor: '#34A5DA', height: 2, marginLeft: 30, marginRight: 30}}></View>
+          <View style={{alignItems: 'center', marginBottom: 18}}><Text numberOfLines={1} style={{fontSize: 22, color: 'white'}}>{this.state.address}</Text></View>
+    
         
         <ScrollView       
         pagingEnabled={true}>
@@ -693,12 +699,13 @@ navigator.geolocation.clearWatch(this.watchID);
           scrollToIndex={0}
           scrollEventThrottle={1}       
           data={this.state.data} 
+          ItemSeparatorComponent={this.separator}
           renderItem={({item}) =>       
             <TouchableOpacity 
-              style={{flex: .32,marginLeft: 30,marginRight: 30, borderBottomWidth: 1,borderBottomColor: item.properties.color}} 
+              style={{flex: .12,marginLeft: 30,marginRight: 30}} 
               onPress={() => this.handlePress(item.properties.stop_id, item.properties.stop_feed, item.properties.stop_name, item.geometry.coordinates, item.properties.color, item.distance.dist, item.properties.stop_id[0], item.transfers)}      
               >
-                <View style={styles.title} >
+                <View>
                   <Text allowFontScaling={true} style={styles.stopsText}><Text style={{color: item.properties.color}}>{item.properties.stop_name}</Text></Text>
                  <Text allowFontScaling={true} style={styles.timeText} >{item.dist}<Text style={{fontSize: 18}}>  {item.distMeasurement}</Text></Text>
                 </View>
@@ -707,16 +714,15 @@ navigator.geolocation.clearWatch(this.watchID);
         />
         </ScrollView>
         </View>
-        <View style={{backgroundColor: '#34A5DA', height: 2, marginBottom: 10, marginLeft: 30, marginRight: 30}}></View>
         <View style={styles.schedule}>
-        <Schedule styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width} ploc={this.state.address}/>
+        <Schedule separator={this.separator} styles={styles} stops={this.state.data} north={this.state.north} south={this.state.south} name={this.state.name}lat={this.state.uLatitude} lng={this.state.uLongitude} markers={this.state.markers} LatLng={this.state.coordinates} color={this.state.color} distance={this.state.distance} route={this.state.route} orientation={this.state.orientation} height={this.state.height} width={this.state.width} ploc={this.state.address}/>
       </View>
     </View> 
     )} else { 
   return ( 
     <View style={{flex: 1, justifyContent: 'center'}}>
       <Image 
-        source={require('../assets/nearbyScreenShot.png')}
+        source={require('../assets/blkbg.png')}
         style={{height: this.state.height, width: this.state.width}}
         />
      
